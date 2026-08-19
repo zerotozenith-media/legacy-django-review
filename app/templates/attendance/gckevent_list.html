@@ -1,0 +1,128 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+    <style>
+        #go-back-arrow {
+            display: none !important;
+        }
+        .event-img {
+            max-width: 80px;
+            max-height: 80px;
+        }
+    </style>
+{% endblock extrastyle %}
+
+{% block content %}
+    {% include 'partials/_messages.html' %}
+    <div class="row">
+        <!--[ GCK Event List ] start-->
+        <div class="col-xl-12 col-md-12">
+            <div class="card Recent-Users">
+                 <h5 class="px-4 pt-4" >GCK Events</h5>
+                <div class="card-header d-flex justify-content-end">
+                    <a href="{% url 'gck_attendance_list' %}" class="btn btn-primary">GCK Attendance List</a>
+                    {% if user.is_staff %}
+                        <a href="{% url 'event_add' %}" class="btn btn-primary">Add GCK Event</a>
+                    {% endif %}
+                </div>
+                <div class="card-block px-0 py-3 m-2">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="gck_event_datatable">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">#</th>
+                                    <th class="text-center">Event Name</th>
+                                    <th class="text-center">Event Month</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                    <tr>
+                                        <td class="text-center">{{ forloop.counter }}</td>
+                                        <td class="text-center">{{ event.name }}</td>
+                                        <td class="text-center">{{ event.year_month|date:"F Y" }}</td>
+                                        <td class="text-center">
+                                            <a href="{% url 'event_edit' event.id %}">
+                                                <i class="fa fa-edit text-primary" title="Edit"></i>
+                                            </a>
+                                            <a href="{% url 'event_delete' event.id %}" id="delete_event_{{ event.id }}">
+                                                <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No events found.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--[ GCK Event List ] end-->
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+          $('#gck_event_datatable').DataTable();
+
+        // Add delete functionality to all delete buttons
+        document.querySelectorAll('[id^="delete_event_"]').forEach(item => {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                const deleteUrl = event.currentTarget.getAttribute('href');
+
+                // Show confirmation modal
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You are about to delete this GCK Event. This action cannot be undone!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Send the DELETE request using fetch (send as POST to handle CSRF properly)
+                        fetch(deleteUrl, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}',  // Django CSRF token for security
+                            },
+                        })
+                            .then(response => response.json())  // Assuming the response is a JSON object
+                            .then(data => {
+                                if (data.message === 'Event deleted successfully') {
+                                    Swal.fire(
+                                        'Deleted!',
+                                        'The user has been deleted.',
+                                        'success'
+                                    ).then(() => {
+                                        window.location.href = '{% url "event_list" %}';  // Redirect to user list after success
+                                    });
+                                } else {
+                                    window.location.href = '{% url "event_list" %}';
+                                }
+                            })
+                            .catch(() => {
+                                Swal.fire(
+                                    'Error!',
+                                    'Unable to send the delete request.',
+                                    'error'
+                                );
+                            });
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock extra_js %}

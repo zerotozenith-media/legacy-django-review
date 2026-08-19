@@ -1,0 +1,220 @@
+{% extends 'layouts/base.html' %}
+{% load static dict_filters %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+    <style>
+        #go-back-arrow {
+            display: none !important;
+        }
+        /* Ensure delete button looks like icon, not a button */
+        .delete-donation {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            vertical-align: middle;
+        }
+        .delete-donation:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+    </style>
+{% endblock extrastyle %}
+
+{% block content %}
+    {% include 'partials/_messages.html' %}
+    {% include "includes/filter_bar.html" %}
+    <div class="row">
+        <div class="col-xl-12 col-md-6">
+            <div class="card Recent-Users">
+                <div class="card-header d-flex justify-content-between">
+                    <h5>List of Online Donations</h5>
+                    {% if request.user.role == 2 or request.user.role == 3 or request.user.role == 4 or request.user.is_superuser %}
+                        <div class="ml-auto">
+                            <a href="{% url 'add-interac' %}" class="btn btn-primary">Add Cheque/Direct Deposit</a>
+                            <a href="{% url 'add-single-interac' %}" class="btn btn-primary">Add Single Interac Deposit</a>
+                            <a href="{% url 'offering_uploader' 'interec_e_transfer' %}" class="btn btn-primary">Import Multiple Interac Deposit</a>
+                            <a href="{% url 'bank_statement_importer' %}" class="btn btn-primary">Upload Bank Statement</a>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-block px-0 py-3 m-2">
+                    <p class="font-weight-bold">**Gray color rows are Miscellaneous Contributions</p>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="cash_donation_datatable">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Date Deposited</th>
+                                    <th class="text-center">Church</th>
+                                    <th class="text-center">Donor</th>
+                                    <th class="text-center">Amount($)</th>
+                                    <th class="text-center">Payment Type</th>
+                                    <th class="text-center">Special Contribution</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for donation in contribution %}
+                                    <tr>
+                                        <td class="text-center">{{ donation.deposited_date|date:"Y-m-d" }}</td>
+                                        <td class="text-center">
+                                            {% if donation.local_church %}
+                                                {{ donation.local_church.local_church_name.title }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">{{ donation.contributor.full_name }}</td>
+                                        <td class="text-center">{{ donation.amount|floatformat:2 }}</td>
+                                        <td class="text-center">{{ donation.payment_type|capitalize_and_contrib_type }}</td>
+                                        {% if donation.special_contribution %}
+                                            <td class="text-center">
+                                                <i class="fa fa-star" aria-hidden="true" title="Special Contribution" style="color: gold;"></i>
+                                            </td>
+                                        {% else %}
+                                            <td class="text-center"></td>
+                                        {% endif %}
+                                        {% if donation.can_edit %}
+                                            <td class="text-center">
+                                                <a href="{% url donation.payment_type donation.id donation.type %}">
+                                                    <i class="fa fa-edit text-primary" title="Edit"></i>
+                                                </a>
+                                                <button type="button"
+                                                        class="delete-donation"
+                                                        data-url="{% url donation.payment_type donation.id donation.type %}"
+                                                        data-id="{{ donation.id }}">
+                                                    <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                                </button>
+                                            </td>
+                                        {% else %}
+                                            <td class="text-center"></td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                                {% for donation in miscellaneous %}
+                                    <tr>
+                                        <td class="text-center" style="background-color: #b9bdba">{{ donation.deposited_date|date:"Y-m-d" }}</td>
+                                        <td class="text-center" style="background-color: #b9bdba">
+                                            {% if donation.local_church %}
+                                                {{ donation.local_church.local_church_name.title }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center" style="background-color: #b9bdba">{{ donation.contributor.full_name }}</td>
+                                        <td class="text-center" style="background-color: #b9bdba">{{ donation.amount|floatformat:2 }}</td>
+                                        <td class="text-center" style="background-color: #b9bdba">{{ donation.payment_type|capitalize_and_contrib_type }}</td>
+                                        {% if donation.special_contribution %}
+                                            <td class="text-center" style="background-color: #b9bdba">
+                                                <i class="fa fa-star" aria-hidden="true" title="Special Contribution" style="color: gold;"></i>
+                                            </td>
+                                        {% else %}
+                                            <td class="text-center" style="background-color: #b9bdba"></td>
+                                        {% endif %}
+                                        <td class="text-center" style="background-color: #b9bdba">
+                                            {% if donation.can_edit %}
+                                                <a href="{% url donation.payment_type donation.id donation.type %}">
+                                                    <i class="fa fa-edit text-primary" title="Edit"></i>
+                                                </a>
+                                            {% else %}
+                                                <span style="display: inline-block; width: 20px;"></span>
+                                            {% endif %}
+                                            <button type="button"
+                                                    class="delete-donation"
+                                                    data-url="{% url donation.payment_type donation.id donation.type %}"
+                                                    data-id="{{ donation.id }}">
+                                                <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+<script>
+$(document).ready(function () {
+
+    if (!$.fn.DataTable.isDataTable('#cash_donation_datatable')) {
+        $('#cash_donation_datatable').DataTable({
+            order: [[0, 'desc']],
+        });
+    }
+
+    function getCsrfToken() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) return meta.getAttribute('content');
+        var cookie = document.cookie.match(/csrftoken=([^;]+)/);
+        if (cookie) return cookie[1];
+        var input = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (input) return input.value;
+        return '{{ csrf_token }}';
+    }
+
+    function doDelete(deleteUrl) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You are about to delete this donation!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                fetch(deleteUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getCsrfToken(),
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(function (response) {
+                    if (response.ok || response.status === 204) {
+                        Swal.fire('Deleted!', 'The donation has been deleted.', 'success')
+                            .then(function () { location.reload(); });
+                    } else {
+                        Swal.fire('Error!', 'Failed to delete. Status: ' + response.status, 'error');
+                    }
+                })
+                .catch(function () {
+                    Swal.fire('Error!', 'Unable to send the delete request.', 'error');
+                });
+            }
+        });
+    }
+
+    // Handles: class="delete-donation" data-url="..."  (current template)
+    $(document).on('click', '.delete-donation', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var deleteUrl = $(this).data('url') || $(this).attr('data-url');
+        if (!deleteUrl) { alert('Delete URL missing.'); return; }
+        doDelete(deleteUrl);
+    });
+
+    // Handles: id="delete_cash_donation_xxx" href="..."  (deployed template)
+    $(document).on('click', '[id^="delete_cash_donation_"]', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var deleteUrl = $(this).attr('href') || $(this).data('delete-url');
+        if (!deleteUrl) { alert('Delete URL missing.'); return; }
+        doDelete(deleteUrl);
+    });
+
+});
+</script>
+{% endblock content %}

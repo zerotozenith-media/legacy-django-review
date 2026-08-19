@@ -1,0 +1,367 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% block extrastyle %}
+{% endblock extrastyle %}
+{% block content %}
+{% include 'attendance/tabs.html' %}
+
+{% include 'partials/_messages.html' %}
+<div class="row">
+    <div class="container col-xl-12">
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">GCK Converts Report</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action=".">
+                    <div class="row mb-4">
+                        <!-- Region Selection -->
+                        <div class="col-md-4 mt-2">
+                             <label for="local_church">Church</label>
+                                <select class="form-control" name="local_church" id="local_church"  onchange="this.form.submit()" required>
+                                    {% for local_church in local_churches %}
+                                        <option name="local_church" value="{{ local_church.id }}"
+                                                {% if local_church.id == selected_church %}selected{% endif %}>{{ local_church.local_church_name.title }}</option>
+                                    {% endfor %}
+                                </select>
+                        </div>
+                         <!-- Month Selection -->
+                        <div class="col-md-4 mt-2">
+                            <label for="month" class="form-label fw-bold">Select Month</label>
+                            <select name="month" id="month" class="form-control" onchange="this.form.submit()">
+                                {% for month in months %}
+                                <option value="{{ month.value }}" {% if month.value == current_month %}selected{% endif %}>
+                                    {{ month.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="table-responsive mt-4">
+                <form id="report-form" method="post" action="">
+                    {% csrf_token %}
+                    <div class="table-responsive p-3">
+                              <button type="button" class="btn btn-primary flex-end" id="add-row">
+                        <i class="fas fa-plus"></i> Add New Row
+                    </button>
+                        <table class="table table-hover shadow-sm table-bordered align-middle" id="converts_datatable">
+
+                <thead class="table-dark">
+                    <tr>
+                         <th style="background-color: #16365e !important; min-width: 200px;">Name</th>
+                        <th style="background-color: #16365e !important;  min-width: 200px;">Date</th>
+                        <th style="background-color: #16365e !important;  min-width: 200px;">Sex</th>
+                        <th style="background-color: #16365e !important;  min-width: 200px;">Phone Number</th>
+                        <th style="background-color: #16365e !important;  min-width: 200px;">Email Address</th>
+                        <th style="background-color: #16365e !important;  min-width: 200px;">Location</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Global Crusade</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Comments</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Follow-Up Worker</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Follow-Up Letter from GS</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Conversion and After</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Chapter 1: Secrets of Spiritual Growth</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Additional Follow-Up Report (Chapter 1)</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Chapter 2: Blueprints for Spiritual Growth</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Additional Follow-Up Report (Chapter 2)</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Study 1: Assurance of Salvation</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Additional Follow-Up Report (Study 1)</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Water Baptism</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Study 2: Character of the Christian</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Additional Follow-Up Report (Study 2)</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Study 3: Searching the Scriptures</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Additional Follow-Up Report (Study 3)</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Study 4: Privileges in Prayer</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Additional Follow-Up Report (Study 4)</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Study 5: Restitution</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Additional Follow-Up Report (Study 5)</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Study 6: Tell Thy Friends</th>
+                        <th style="background-color: #16365e !important;  min-width: 300px;">Additional Follow-Up Report (Study 6)</th>
+                        <th style="background-color: #16365e !important;">Actions</th>
+                    </tr>
+                </thead>
+                            <tbody id="report-body">
+                                    {% for report in reports %}
+                                    <tr data-id="{{ report.id }}">
+                                         <td>
+                                            <input type="text" class="form-control editable" name="name" value="{{ report.name }}">
+                                        </td>
+                                        <td>
+                                            <input type="date" class="form-control date-picker" name="date" value="{{ report.date|date:'Y-m-d' }}">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control editable" name="sex" value="{{ report.sex }}">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control editable" name="phone_number" value="{{ report.phone_number }}">
+                                        </td>
+                                        <td>
+                                            <input type="email" class="form-control editable" name="email_address" value="{{ report.email_address }}">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control editable" name="location" value="{{ report.location }}">
+                                        </td>
+                                        <td>
+                                                <textarea class="form-control editable" name="global_crusade" rows="2">{{ report.global_crusade }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="comments" rows="2">{{ report.comments }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="follow_up_worker" rows="2">{{ report.follow_up_worker }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="follow_up_letter_from_gs" rows="2">{{ report.follow_up_letter_from_gs }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="conversion_and_after" rows="2">{{ report.conversion_and_after }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="chapter_1_secrets_of_spiritual_growth" rows="2">{{ report.chapter_1_secrets_of_spiritual_growth }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="additional_follow_up_report_chapter_1" rows="2">{{ report.additional_follow_up_report_chapter_1 }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="chapter_2_blueprints_for_spiritual_growth" rows="2">{{ report.chapter_2_blueprints_for_spiritual_growth }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="additional_follow_up_report_chapter_2" rows="2">{{ report.additional_follow_up_report_chapter_2 }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="study_1_assurance_of_salvation" rows="2">{{ report.study_1_assurance_of_salvation }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="additional_follow_up_report_study_1" rows="2">{{ report.additional_follow_up_report_study_1 }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control" name="water_baptism" rows="2">{{ report.water_baptism }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control" name="study_2_character_of_the_christian" rows="2">{{ report.study_2_character_of_the_christian }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="additional_follow_up_report_study_2" rows="2">{{ report.additional_follow_up_report_study_2 }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="study_3_searching_the_scriptures" rows="2">{{ report.study_3_searching_the_scriptures }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="additional_follow_up_report_study_3" rows="2">{{ report.additional_follow_up_report_study_3 }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="study_4_privileges_in_prayer" rows="2">{{ report.study_4_privileges_in_prayer }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="additional_follow_up_report_study_4" rows="2">{{ report.additional_follow_up_report_study_4 }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="study_5_restitution" rows="2">{{ report.study_5_restitution }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="additional_follow_up_report_study_5" rows="2">{{ report.additional_follow_up_report_study_5 }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="study_6_tell_thy_friends" rows="2">{{ report.study_6_tell_thy_friends }}</textarea>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control editable" name="additional_follow_up_report_study_6" rows="2">{{ report.additional_follow_up_report_study_6 }}</textarea>
+                                            </td>
+                                            <td>
+                                                <div class="text-center">
+                                                    <i class="fa fa-trash text-danger delete-row" title="Delete"></i>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                </form>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#converts_datatable').DataTable({
+            "paging": true,            // Enable pagination
+            "lengthChange": false,      // Allow user to change the number of rows per page
+            "pageLength": 10,
+             "searching": false,
+        });
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const csrfToken = "{{ csrf_token }}"; // Django CSRF token
+
+        // Function to add a new row
+        document.getElementById("add-row").addEventListener("click", function () {
+            // Get selected values from the form
+            const localChurch = document.getElementById("local_church").value; // Get selected local church
+            const month = document.getElementById("month").value; // Get selected month
+
+            // Send a POST request to create the new row on the server
+            fetch("{% url 'gck_converts_follow_up' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken,
+                },
+                body: JSON.stringify({
+                    local_church: localChurch,
+                    month: month,
+                    action: "create",
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.status === "success") {
+                        console.log("Row created successfully on server", data);
+                        window.location.reload(); // Refresh the page
+                    } else {
+                        window.location.reload();
+                    }
+                })
+                .catch((error) => {
+                    window.location.reload();
+                });
+        });
+
+        // Function to delete a row with confirmation
+        document.getElementById("report-body").addEventListener("click", function (event) {
+            if (event.target.classList.contains("delete-row")) {
+                const row = event.target.closest("tr");
+                const rowId = row.dataset.id;
+
+                // Show SweetAlert2 confirmation dialog
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You are about to delete this GCK Convert Detailed Report!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (rowId) {
+                            // Perform AJAX request to delete the row
+                            console.log(`Deleting row with ID: ${rowId}`); // Debug log
+                            fetch("{% url 'gck_converts_follow_up' %}", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": csrfToken,
+                                },
+                                body: JSON.stringify({
+                                    id: rowId,
+                                    action: "delete"
+                                }),
+                            })
+                                .then((response) => response.json())
+                                .then((data) => {
+                                    if (data.status === "success") {
+                                        console.log("Row deleted successfully");
+                                        row.remove();
+                                        window.location.reload();
+                                    } else {
+                                        window.location.reload();
+                                    }
+                                })
+                                .catch((error) => {
+                                    window.location.reload();
+                                });
+                        } else {
+                            window.location.reload();
+                            row.remove();
+                        }
+                    }
+                });
+            }
+        });
+        // Handle blur event for text inputs and textareas
+        document.querySelectorAll(".form-control").forEach(function (editableField) {
+            editableField.addEventListener("blur", function (event) {
+                const row = event.target.closest("tr"); // Get the closest row
+                const fieldId = row.dataset.id; // Get the row's dataset ID
+                const fieldName = event.target.name; // Use the 'name' attribute from the input/textarea
+                const updatedValue = event.target.value.trim(); // Get the input's current value
+
+                // Send the updated data to the server
+                fetch("{% url 'gck_converts_follow_up' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken,
+                    },
+                    body: JSON.stringify({
+                        id: fieldId,
+                        field_name: fieldName,
+                        updated_value: updatedValue,
+                        action: "update",
+                    }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.status === "success") {
+                            console.log(`Field "${fieldName}" updated successfully`, data);
+                        } else {
+                            console.log(`Failed to update field "${fieldName}"`, data);
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(`Error updating field "${fieldName}"`, error);
+                    });
+            });
+        });
+
+        // Handle change event for date inputs
+        document.querySelectorAll(".form-control[type='date']").forEach(function (dateField) {
+            dateField.addEventListener("change", function (event) {
+                const row = event.target.closest("tr");
+                const fieldId = row.dataset.id;
+                const fieldName = event.target.name; // Use the 'name' attribute
+                const updatedValue = event.target.value; // Get the new date value
+
+                // Send the updated data to the server
+                fetch("{% url 'gck_converts_follow_up' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken,
+                    },
+                    body: JSON.stringify({
+                        id: fieldId,
+                        field_name: fieldName,
+                        updated_value: updatedValue,
+                        action: "update",
+                    }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.status === "success") {
+                            console.log(`Date "${fieldName}" updated successfully`, data);
+                        } else {
+                            console.log(`Failed to update date "${fieldName}"`, data);
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(`Error updating date "${fieldName}"`, error);
+                    });
+            });
+        });
+
+    });
+</script>
+{% endblock content %}

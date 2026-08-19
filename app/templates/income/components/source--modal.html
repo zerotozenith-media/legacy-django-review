@@ -1,0 +1,32 @@
+{% load static %}
+<div class="modal fade" id="source-modal" data-backdrop="static" tabindex="-1"
+     role="dialog" aria-labelledby="source_info" aria-hidden="false" style="top: 15px; left: 15px">
+    <div style="width: 100%;">
+        <div class="modal-dialog" id="source-dialog" role="document"
+             style="position: absolute;  min-width: 800px; left: 25%">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="source-modal-title">
+                        Add Source
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <form id="source-modal-form">
+                                {{ csrf }}
+                                <div id="source-modal-body">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

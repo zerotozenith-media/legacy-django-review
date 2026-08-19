@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+{% load i18n static %}
+
+<html lang="en">
+
+<head>
+    {% include 'includes/head.html' %}
+
+    <style>
+        @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+
+        :root {
+            --color-black: #373636;
+            --color-neutral-1: #f6f5f6;
+            --color-neutral-5: #999798;
+            --color-primary-1: rgba(117, 160, 216, 0.81);
+            --color-primary-2: #dce9eb;
+            --color-primary-3: #c6dcdf;
+            --color-primary-4: #82b1b8;
+            --color-primary: #247783;
+            --color-primary-6: #1d5f69;
+            --color-white: #fdfdfe;
+            --font-family-text: 'Inter', sans-serif;
+            --font-family-title: 'Lora', serif;
+        }
+        body {
+            font-family: "Open Sans", sans-serif;
+        }
+        .card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            word-wrap: break-word;
+            background-color: rgba(255, 255, 255, 0.4);
+            background-clip: border-box;
+            border: 1px solid #eceef3;
+            border-radius: 1rem;
+        }
+
+        .shadow {
+            box-shadow: 0px 3px 3px -1px rgba(10, 22, 70, .1), 0px 0px 1px 0px rgba(10, 22, 70, .06) !important;
+        }
+
+        .border-0 {
+            border-width: 0 !important;
+        }
+
+        .card-body {
+            flex: 1 1 auto;
+            padding: 1.5rem 1.5rem;
+            color: #525f7f;
+        }
+
+        *, *::before, *::after {
+            border: 0 solid #e7eaf0;
+        }
+
+        .pcoded-navbar {
+            top: 10px;
+            left: 10px;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #16365e, #013c84fc)
+        }
+
+        .go-back-arrow i {
+            color: #333;
+          transition: color 0.2s ease;
+        }
+
+        .go-back-arrow:hover i {
+          color: #2060d1;
+        }
+
+        .b-brand .b-title {
+            font-size: 22px;
+            margin-left: 25px;
+        }
+
+        body {
+            background-color: #f6f6f6;
+        }
+
+        .pcoded-navbar a {
+            margin-left: 10px;
+            margin-top: 26px;
+        }
+
+        .scroll-div {
+            padding-top: 20px;
+        }
+
+        .text-c-grey {
+            color: #6b7b93 !important
+        }
+
+        .font-semibold {
+            font-weight: 500;
+        }
+
+        .text-c-primary {
+            color: #16365e;
+        }
+
+        .btn {
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .pcoded-navbar .pcoded-inner-navbar > li.active > a, .pcoded-navbar .pcoded-inner-navbar > li.pcoded-trigger > a {
+            background: #2060d1;
+        }
+
+        .custom-table {
+
+        }
+
+        table.dataTable {
+            border-collapse: collapse;
+            margin: 1px 0 0;
+            width: 100%;
+        }
+
+        .dataTable > tr {
+            border-bottom: 1px solid #709dd5;
+            border-top: 1px solid #16365e;;
+            margin: -1px 0 0;
+            width: 100%;
+        }
+
+
+        .dataTable > td, th {
+            font: inherit;
+            line-height: inherit;
+            text-align: left;
+            min-width: 3rem;
+        }
+
+        .dataTable > td:first-of-type, th:first-of-type {
+            padding-left: 1.5rem;
+        }
+
+        .dataTable > td:last-of-type, th:last-of-type {
+            padding-right: 1.5rem;
+        }
+
+        .dataTable > th {
+            color: #16365e;
+            font-size: .75rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            padding: 1.5rem 1rem;
+        }
+
+        .dataTable > td {
+            font-size: .875rem;
+            padding: 1.25rem 1rem;
+        }
+
+        table.dataTable {
+            border-collapse: collapse;
+        }
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 10px 18px;
+            border-bottom: 1px solid #709dd5;
+        }
+
+        .form-control {
+            border-radius: 5px
+        }
+
+        #reportrange {
+            border-radius: 5px
+        }
+
+        .chart-container {
+            width: 100%;
+            height: auto;
+        }
+
+        .icon-shape {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            vertical-align: middle;
+            width: 3rem;
+            height: 3rem;
+            box-shadow: 0px 3px 3px -1px rgba(10, 22, 70, .1), 0px 0px 1px 0px rgba(10, 22, 70, .06) !important;
+            background: #16365e;
+            color: white;
+            font-size: 30px;
+            border-radius: 10px;
+        }
+
+        @media only screen and (min-width: 1200px) {
+            .chart-card {
+                height: 550px;
+            }
+
+            .icon-card {
+                height: 170px;
+            }
+        }
+
+        .btn-primary {
+            color: #fff;
+            background-color: #16365e;
+            border-color: #12253d;
+        }
+
+        .btn-primary:hover {
+            color: #fff;
+            background-color: #2060d1;
+            border-color: #1d4ca3;
+        }
+
+        .btn-primary.disabled, .btn-primary:disabled {
+            color: #fff;
+            background-color: #04a9f5;
+            border-color: #04a9f5;
+        }
+
+        .btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show > .btn-primary.dropdown-toggle {
+            color: #fff;
+            background-color: #2060d1;
+            border-color: #1d4ca3;
+        }
+
+        select {
+            text-transform: capitalize;
+            appearance: none !important; /* Remove default arrow */
+            background-color: white !important; /* Set background color */
+            padding: 8px 32px 8px 12px !important; /* Add padding to make space for the icon */
+            border: 1px solid #ccc !important; /* Optional: add border */
+            border-radius: 4px !important; /* Optional: add rounded corners */
+            font-size: 16px !important; /* Adjust font size */
+            background-image: url('data:image/svg+xml,%3Csvg xmlns%3D%22http%3A//www.w3.org/2000/svg%22 width%3D%2216%22 height%3D%2216%22 fill%3D%22currentColor%22 class%3D%22bi bi-caret-down-fill%22 viewBox%3D%220 0 16 16%22%3E%3Cpath d%3D%22M7.247 11.14 2.451 5.658C1.885 5.012 2.345 4 3.204 4h9.592c.86 0 1.32 1.012.753 1.658l-4.796 5.482a1 1 0 0 1-1.506 0z%22/%3E%3C/svg%3E') !important;
+            background-repeat: no-repeat !important;
+            background-position: right 12px center !important; /* Position the icon */
+            background-size: 16px !important; /* Size of the icon */
+        }
+        #reportrange {
+            text-transform: capitalize;
+            appearance: none !important; /* Remove default arrow */
+            background-color: white !important; /* Set background color */
+            padding: 8px 32px 8px 12px !important; /* Add padding to make space for the icon */
+            border: 1px solid #ccc !important; /* Optional: add border */
+            border-radius: 4px !important; /* Optional: add rounded corners */
+            font-size: 16px !important; /* Adjust font size */
+            background-image: url('data:image/svg+xml,%3Csvg xmlns%3D%22http%3A//www.w3.org/2000/svg%22 width%3D%2216%22 height%3D%2216%22 fill%3D%22currentColor%22 class%3D%22bi bi-caret-down-fill%22 viewBox%3D%220 0 16 16%22%3E%3Cpath d%3D%22M7.247 11.14 2.451 5.658C1.885 5.012 2.345 4 3.204 4h9.592c.86 0 1.32 1.012.753 1.658l-4.796 5.482a1 1 0 0 1-1.506 0z%22/%3E%3C/svg%3E') !important;
+            background-repeat: no-repeat !important;
+            background-position: right 12px center !important; /* Position the icon */
+            background-size: 16px !important; /* Size of the icon */
+            overflow: hidden;
+        }
+
+        select:focus {
+            outline: none; /* Remove focus outline */
+            border-color: #007bff; /* Add focus color */
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Optional: add focus shadow */
+        }
+
+        option {
+            text-transform: capitalize;
+        }
+
+        .form-control {
+            height: calc(1.5em + 0.75rem + 9px)
+        }
+        .form-group {
+            max-width: 479px;
+            width: 100%;
+        }
+
+        .select2-container--default .select2-selection--single {
+            min-height: 43px;
+            font-size: 16px;
+            color: black;
+            text-transform: capitalize;
+            appearance: none !important; /* Remove default arrow */
+            background-color: white !important; /* Set background color */
+            padding: 8px 32px 8px 12px !important; /* Add padding to make space for the icon */
+            border: 1px solid #ccc !important; /* Optional: add border */
+            border-radius: 4px !important; /* Optional: add rounded corners */
+            font-size: 16px !important; /* Adjust font size */
+            background-image: url('data:image/svg+xml,%3Csvg xmlns%3D%22http%3A//www.w3.org/2000/svg%22 width%3D%2216%22 height%3D%2216%22 fill%3D%22currentColor%22 class%3D%22bi bi-caret-down-fill%22 viewBox%3D%220 0 16 16%22%3E%3Cpath d%3D%22M7.247 11.14 2.451 5.658C1.885 5.012 2.345 4 3.204 4h9.592c.86 0 1.32 1.012.753 1.658l-4.796 5.482a1 1 0 0 1-1.506 0z%22/%3E%3C/svg%3E') !important;
+            background-repeat: no-repeat !important;
+            background-position: right 12px center !important; /* Position the icon */
+            background-size: 16px !important;
+
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            display: none;
+        }
+        table.dataTable tbody th, table.dataTable tbody td {
+            padding: 14px 12px;
+        }
+
+        .paginate_button.current {
+            background: #16365e!important;
+            color: white!important;
+            border:1px solid #16365e!important;
+
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            color: white!important;
+        }
+        table.dataTable tbody th, table.dataTable tbody td {
+            border-bottom: 1px solid #f7f6f6!important;
+            font-family: "Montserrat","Open Sans",sans-serif!important;
+        }
+        .dataTable > th {
+            font-weight: 700!important;
+            font-size: small!important;
+            font-family: "Montserrat","Open Sans",sans-serif!important;
+            padding: 14px 12px!important;
+        }
+        .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {
+            font-family: "Montserrat","Open Sans",sans-serif!important;
+        }
+    </style>
+    {% block extrastyle %}{% endblock extrastyle %}
+    {% block extrahead %}{% endblock extrahead %}
+</head>
+<body>
+
+{% block pre_loader %}
+    {% include 'includes/pre-loader.html' %}
+{% endblock pre_loader %}
+
+{% block sidebar %}
+    {% include 'includes/sidebar.html' %}
+{% endblock sidebar %}
+
+{% block header %}
+    {% include 'includes/navigation.html' %}
+{% endblock header %}
+
+<!-- [ Main Content ] start -->
+<div class="pcoded-main-container">
+    <div class="pcoded-wrapper">
+        <div class="pcoded-content pt-0">
+            <div class="pcoded-inner-content">
+                <!-- [ breadcrumb ] start -->
+                {% block breadcrumbs %}
+                    {% include 'includes/breadcrumb.html' %}
+                {% endblock breadcrumbs %}
+                <!-- [ breadcrumb ] end -->
+                <div class="main-body">
+                    <div class="page-wrapper">
+                        {% block content %}{% endblock content %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'includes/scripts.html' %}
+<script src="{% static 'plugins/toastr/nuget/content/scripts/toastr.min.js' %}"></script>
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": 300,
+        "hideDuration": 1000,
+        "timeOut": 5000,
+        "extendedTimeOut": 1000,
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+    {% for message in messages %}
+        {% if message.tags %}
+            {% if 'success' in message.tags %}
+                toastr.success("{{ message }}");
+            {% elif 'info' in message.tags %}
+                toastr.info("{{ message }}");
+            {% elif 'warning' in message.tags %}
+                toastr.warning("{{ message }}");
+            {% elif 'error' in message.tags %}
+                toastr.error("{{ message }}");
+            {% elif 'danger' in message.tags %}
+                toastr.error("{{ message }}");
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</script>
+<!--<script>-->
+<!--  window.addEventListener('load', function () {-->
+<!--    const loader = document.getElementById('loading-overlay');-->
+<!--    if (loader) {-->
+<!--      loader.style.opacity = 0;-->
+<!--      setTimeout(() => loader.style.display = 'none', 500);-->
+<!--    }-->
+<!--  });-->
+<!--</script>-->
+{% include 'includes/chatbot.html' %}
+{% block extra_js %}
+{% endblock extra_js %}
+</body>
+</html>

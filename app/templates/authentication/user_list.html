@@ -1,0 +1,234 @@
+<!-- user_list.html -->
+{% extends 'layouts/base.html' %}
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+    <style>
+         #go-back-arrow {
+            display: none !important;
+          }
+
+    </style>
+{% endblock extrastyle %}
+
+{% block content %}
+    {% include 'partials/_messages.html' %}
+    {% include "includes/filter_bar.html" %}
+    <div class="col-xl-12 col-md-6">
+
+        <div class="card Recent-Users">
+            <div class="card-header d-flex justify-content-between">
+                <h3>Users</h3>
+                <div class="ml-auto">
+                    <a href="{% url 'user_add' %}" class="btn btn-primary">Add User</a>
+                    <a href="{% url 'user_uploader' %}" class="btn btn-primary">Upload Users</a>
+                </div>
+            </div>
+            <div class="card-block px-0 py-3 m-2">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="user_tabledata">
+                        <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Local Church</th>
+                            <th>Role</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Active</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for user in users %}
+                            <tr class="user-row" data-user-id="{{ user.id }}">
+                                <td>
+                                    <h6 class="m-0">{{ user.email }}</h6>
+                                </td>
+                                <td class="text-center">
+                                            {% if user.local_church %}
+                                                {{ user.local_church.local_church_name.title }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.role == 1 %}
+                                        Member
+                                    {% elif user.role == 2 %}
+                                        Local Church Pastor
+                                    {% elif user.role == 6 %}
+                                        Donor
+                                    {% elif user.role == 5 %}
+                                        Marriage Committee
+                                    {% elif user.role == 3 %}
+                                        National Overseer
+                                    {% else %}
+                                        Regional Overseer
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <h6 class="m-0">{{ user.first_name }}</h6>
+                                </td>
+                                <td>
+                                    <h6 class="m-0">{{ user.last_name }}</h6>
+                                </td>
+                                <td>
+                                    {% if user.is_active %}
+                                        <h6 class="m-0">Yes</h6>
+                                    {% else %}
+                                        <h6 class="m-0">No</h6>
+                                    {% endif %}
+
+                                </td>
+                                <td>
+                                    {% if request.user == 3 or request.user.is_staff %}
+                                        {% if user.is_active %}
+                                            <button class="btn btn-outline-danger btn-rounded btn-sm activate-deactivate"
+                                                    data-user-id="{{ user.id }}" data-toggle="modal"
+                                                    data-target="#activateDeactivateModal">
+                                                Deactivate
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-outline-success btn-rounded btn-sm activate-deactivate"
+                                                    data-user-id="{{ user.id }}" data-toggle="modal"
+                                                    data-target="#activateDeactivateModal">
+                                                Activate
+                                            </button>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted small">-</span>
+                                    {% endif %}
+
+                                    <!-- Edit Icon -->
+                                    {% if request.user.id != user.id %}
+                                     <a href="{% url 'user_edit' user.id %}">
+                                            <i class="fa fa-edit text-primary" title="Edit"></i>
+                                     </a>
+                                      <a href="{% url 'user_delete' user.id %}"
+                                           id="delete_cash_donation_{{ user.id }}">
+                                            <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                      </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Activate/Deactivate Modal -->
+    <div class="modal fade" id="activateDeactivateModal" tabindex="-1" role="dialog"
+         aria-labelledby="activateDeactivateModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="activateDeactivateModalLabel">Confirmation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to change active status?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="confirmActivateDeactivate">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Add delete functionality to all delete buttons
+        document.querySelectorAll('[id^="delete_cash_donation_"]').forEach(item => {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                const deleteUrl = event.currentTarget.getAttribute('href');
+
+                // Show confirmation modal
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You are about to delete this user. This action cannot be undone!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Send the DELETE request using fetch (send as POST to handle CSRF properly)
+                        fetch(deleteUrl, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}',  // Django CSRF token for security
+                            },
+                        })
+                            .then(response => response.json())  // Assuming the response is a JSON object
+                            .then(data => {
+                                if (data.ok) {
+                                    Swal.fire(
+                                        'Deleted!',
+                                        'The user has been deleted.',
+                                        'success'
+                                    ).then(() => {
+                                        window.location.href = '{% url "user_list" %}';  // Redirect to user list after success
+                                    });
+                                } else {
+                                    Swal.fire(
+                                        'Error!',
+                                        'Unable to delete the user.',
+                                        'error'
+                                    );
+                                }
+                            })
+                            .catch(() => {
+                                Swal.fire(
+                                    'Error!',
+                                    'Unable to send the delete request.',
+                                    'error'
+                                );
+                            });
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+    <script>
+        $(document).ready(function () {
+            $('#user_tabledata').DataTable();
+            var userIdToActivateDeactivate;
+
+            $(document).on("click", ".activate-deactivate", function () {
+                userIdToActivateDeactivate = $(this).data("user-id");
+            });
+
+            $(document).on("click", "#confirmActivateDeactivate", function () {
+                if (userIdToActivateDeactivate) {
+                    // Get CSRF token from cookies
+                    var csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
+
+                    $.ajax({
+                        url: "/authentication/" + userIdToActivateDeactivate + "/activate-deactivate/",
+                        type: "POST",
+                        headers: {
+                            "X-CSRFToken": csrfToken
+                        },
+                        success: function () {
+                            // Refresh the table or update the specific row as needed
+                            location.reload();
+                        },
+                    });
+
+                    // Close the modal
+                    $('#activateDeactivateModal').modal('hide');
+                }
+            });
+        });
+    </script>
+{% endblock %}

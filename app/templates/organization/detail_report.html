@@ -1,0 +1,228 @@
+{% extends 'layouts/base.html' %}
+{% load static dict_filters %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% block extrastyle %}
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+        }
+
+        .card {
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        select.form-control {
+            max-width: 300px;
+            margin: 0 auto;
+            display: block;
+            font-size: 14px;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .custom-box {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-box h5 {
+            margin-bottom: 20px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .custom-box-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .custom-box-item {
+            flex: 1 1 calc(50% - 20px);
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #fff;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-box-item label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 10px;
+        }
+
+        .custom-box-item textarea {
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .saveReportBtn {
+            margin-top: 20px;
+            display: inline-block;
+            align-self: flex-end;
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .saveReportBtn:hover {
+            background-color: #0056b3;
+        }
+
+        .empty-state {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .custom-box-item {
+                flex: 1 1 100%;
+            }
+
+            select.form-control {
+                max-width: 100%;
+            }
+        }
+    </style>
+{% endblock extrastyle %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-body">
+            <h1>Detailed Report List</h1>
+            <select id="churchDropdown" class="form-control mb-4">
+                <option value="">Select Local Church</option>
+                {% for church in churches %}
+                    <option value="{{ church.id }}" 
+                        {% if request.user.role == 2 and church in request.user.pastor_churches.all %}selected{% elif church.id == selected_church_id %}selected{% endif %}>
+                        {{ church.local_church_name.title }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            {% if months and selected_church_id %}
+                <form id="reportForm" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="local_church" value="{{ selected_church_id }}"/>
+
+                    {% for month_code, month_name in months %}
+                        <div class="custom-box">
+                            <h5>{{ month_name }} {{ current_year }}</h5>
+                            <input type="hidden" name="date" value="{{ current_year }}-{{ month_code }}-01"/>
+                            <div class="custom-box-items">
+                                {% with reports_dict|get_item:month_code as report %}
+                                        <div class="custom-box-item">
+                                            <label for="comment_{{ month_code }}">Comments:</label>
+                                            <textarea id="comment_{{ month_code }}" name="comment_{{ month_code }}"
+                                                      cols="30"
+                                                      rows="6"
+                                                      placeholder="Comments">{{ report.comment|default:'' }}</textarea>
+                                        </div>
+    
+                                        <div class="custom-box-item">
+                                            <label for="problem_{{ month_code }}">Problems:</label>
+                                            <textarea id="problem_{{ month_code }}" name="problem_{{ month_code }}"
+                                                      cols="30"
+                                                      rows="6"
+                                                      placeholder="Problems">{{ report.problem|default:'' }}</textarea>
+                                        </div >
+                                        <div class="custom-box-item">
+                                            <label for="testimony_{{ month_code }}">Testimony:</label>
+                                            <textarea id="testimony_{{ month_code }}" name="testimony_{{ month_code }}"
+                                                      cols="30" rows="6"
+                                                      placeholder="Testimony">{{ report.testimony|default:'' }}</textarea>
+                                        </div>
+                                        <div class="custom-box-item">
+                                            <label for="follow_up_{{ month_code }}">Follow up:</label>
+                                            <textarea id="follow_up_{{ month_code }}" name="follow_up_{{ month_code }}"
+                                                      cols="30" rows="6"
+                                                      placeholder="Follow up">{{ report.follow_up|default:'' }}</textarea>
+                                        </div>
+                                {% endwith %}
+                                <button type="button" class="btn btn-primary saveReportBtn" data-month="{{ month_code }}">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </form>
+            {% else %}
+                <div class="empty-state">
+                    Please select a church to view reports.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const churchDropdown = document.getElementById('churchDropdown');
+            const reportForm = document.getElementById('reportForm');
+
+            churchDropdown.addEventListener('change', function () {
+                const churchId = churchDropdown.value;
+                window.location.href = `?church_id=${churchId}`;
+            });
+
+            document.querySelectorAll('.saveReportBtn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const month = button.getAttribute('data-month');
+                    const formData = new FormData(reportForm);
+                    formData.append('month', month);
+
+                    fetch('{% url "detail_report_view" %}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            } else {
+                                alert('An error occurred while saving the report.');
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                });
+            });
+        });
+    </script>
+{% endblock content %}

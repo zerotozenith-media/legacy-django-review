@@ -1,0 +1,55 @@
+from django.urls import path
+from .views import *
+from .reports import *
+
+urlpatterns = [
+    path('cash-donation/', CashDonationView.as_view(), name='cash-donation'),
+    path('cash-donation/edit/', edit_cash_donations, name='cash-donation-edit'),
+    path('offerings_usd/edit/', offerings_USD_edit, name='offerings_USD_edit'),
+    path('cash-donation-list/', cash_donation_list, name='cash-donation-list'),
+    path('interac-uploader/', upload_file, name="interac_uploader"),
+    path('bank-statement-importer/', bank_statement_importer, name="bank_statement_importer"),
+    path('download-interac-sample/<str:type>/', download_sample, name='download_interac_sample'),
+    path('donation-list/', interac_transfer_list, name='interac_transfer_list'),
+    path('offerings_usd_add/', OfferingsUSDView.as_view(), name='offerings_usd_add'),
+    path('offerings/manage/<int:id>/<str:type>/<str:currency>/', Offerings.as_view(), name='offerings'),
+    path('offerings_usd_list/', offerings_usd_list, name='offerings_usd_list'),
+    path('receipts/', receipts_index, name='receipts_generation_page'),
+    path('offering_can_summary/', offering_can_summary_report, name='offering_can_summary_report'),
+    path('send_offerings_can_summary/<str:c_id>', send_offerings_receipt, name='send_offerings_can_summary_report'),
+    path('download_offerings_can_summary/<str:c_id>', download_offerings_receipts,
+         name='download_offerings_can_summary_report'),
+    path('send_interac_summary/<str:c_id>', send_interac_summary_receipt, name='send_interac_summary_report'),
+    path('offerings_can_letter/', offerings_can_letter_report, name='offerings_can_letter_report'),
+    path('interac_summary/', interac_summary_report, name='interac_summary_report'),
+    path('interac_letter/', interac_letter_report, name='interac_letter_report'),
+    path('offerings-uploader/<str:type>/', offerings_uploader_view, name='offering_uploader'),
+    path('preview_offerings_can_summary/<str:c_id>', preview_offerings_summary_report,
+         name='preview_offerings_can_summary_report'),
+    path('preview_interac_summary/<str:c_id>', preview_interac_summary_report, name='preview_interac_summary_report'),
+    path('preview_offerings_can_letter/<str:c_id>', preview_offerings_letter_report,
+         name='preview_offerings_can_letter_report'),
+    path('preview_interac_letter/<str:c_id>', preview_interac_letter_report, name='preview_interac_letter_report'),
+    path('send_offerings_can_letter/<str:c_id>', send_offerings_letter_receipt, name='send_offerings_letter_receipt'),
+    path('send_interac_letter/<str:c_id>', send_interac_letter_receipt, name='send_interac_letter_receipt'),
+    path('add_interac/', InteracAddView.as_view(), name='add-interac'),
+    path('edit_interac/<int:id>/<str:type>/', ManageBankDonation.as_view(), name='direct_transfer'),
+    path('edit_interac/<int:id>/<str:type>/', ManageBankDonation.as_view(), name='cheque_deposit'),
+    path('add_single_interac/', SingleInteracContributionCreateView.as_view(), name='add-single-interac'),
+    path(
+        'edit_single_interac/<int:id>/<str:type>/',
+        ManageSingleInteracContributionCreateView.as_view(),
+        name='interec_e_transfer'
+    ),
+
+    path('download_offerings_can_letter/<str:c_id>', download_offerings_letter_receipts,
+         name='download_offerings_can_letter_report'),
+    path('download_interac_summary/<str:c_id>', download_interac_summary_receipts,
+         name='download_interac_summary_report'),
+    path('download_interac_letter/<str:c_id>', download_interac_letter_receipts,
+         name='download_interac_letter_receipts'),
+    path('search-donor-names/', search_donor_names, name='search-donor-names'),
+
+    path('donation_in_kind_receipts/', DonationUsersListView.as_view(), name='donations-receipt-list'),
+    path("receipt/preview/<int:donor_id>/", DownloadDonationReceipt.as_view(), name="donation_receipt_preview"),
+]

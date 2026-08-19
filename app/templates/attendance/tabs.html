@@ -1,0 +1,70 @@
+<div class="container text-center mt-4">
+
+    <!-- Visible on large screens -->
+    <div class="btn-group mb-4 d-none d-lg-inline-flex" role="group" aria-label="Tab Buttons">
+        <a href="{% url 'gck_attendance_list' %}"
+           class="btn btn-primary {% if request.resolver_match.url_name == 'gck_attendance_list' %}active{% endif %}"
+           role="button">
+            GCK Attendance
+        </a>
+        <a href="{% url 'gck_converts_follow_up' %}"
+           class="btn btn-primary {% if request.resolver_match.url_name == 'gck_converts_follow_up' %}active{% endif %}"
+           role="button">
+            Converts Detailed Report
+        </a>
+        <a href="{% url 'gck_ministers_workers_list' %}"
+           class="btn btn-primary {% if request.resolver_match.url_name == 'gck_ministers_workers_list' %}active{% endif %}"
+           role="button">
+            Ministers Workers Conference
+        </a>
+        <a href="{% url 'gck_projections' %}"
+           class="btn btn-primary {% if request.resolver_match.url_name == 'gck_projections' %}active{% endif %}"
+           role="button">
+            Projections
+        </a>
+         {% if request.user.is_staff %}
+        <a href="{% url 'event_list' %}"
+           class="btn btn-primary {% if request.resolver_match.url_name == 'event_list' %}active{% endif %}"
+           role="button">
+            GCK Event List
+        </a>
+    {% endif %}
+    </div>
+
+    <!-- Visible on smaller screens -->
+    <div class="dropdown d-lg-none mb-4">
+        <button class="btn btn-primary dropdown-toggle w-100"
+                type="button"
+                id="responsiveDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+            Menu
+        </button>
+        <ul class="dropdown-menu w-100" aria-labelledby="responsiveDropdown">
+            <li>
+                <a class="dropdown-item {% if request.resolver_match.url_name == 'gck_attendance_list' %}active{% endif %}"
+                   href="{% url 'gck_attendance_list' %}">
+                    GCK Attendance
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item {% if request.resolver_match.url_name == 'gck_converts_follow_up' %}active{% endif %}"
+                   href="{% url 'gck_converts_follow_up' %}">
+                    Converts Detailed Report
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item {% if request.resolver_match.url_name == 'gck_ministers_workers_list' %}active{% endif %}"
+                   href="{% url 'gck_ministers_workers_list' %}">
+                    Ministers Workers Conference
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item {% if request.resolver_match.url_name == 'gck_projections' %}active{% endif %}"
+                   href="{% url 'gck_projections' %}">
+                    Projections
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

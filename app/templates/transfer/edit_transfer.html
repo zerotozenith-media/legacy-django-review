@@ -1,0 +1,101 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+    <style>
+         #go-back-arrow {
+            display: none !important;
+          }
+
+    </style>
+{% endblock extrastyle %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'transfer' %}">Interbank Transfer</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit Interbank Transfer</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form action="{% url 'transfer-edit' transfer.id %}" method="post">
+                {% include 'partials/_messages.html' %}
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="type">Type of Transfer</label>
+                        <select name="type" id="type" class="form-control">
+                            <option value="Received" {% if transfer.type == "Received" %}selected{% endif %}>Received</option>
+                            <option value="Sent" {% if transfer.type == "Sent" %}selected{% endif %}>Sent</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="region_id">Region</label>
+                        <select name="region_id" id="region_id" class="form-control">
+                            <option value="">Select Region</option>
+                            {% for region in all_regions %}
+                            <option value="{{ region.id }}" {% if transfer.region_id == region.id %}selected{% endif %}>
+                                {{ region.name|lower }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label for="account">Account Number</label>
+                        <select name="account" id="account" class="form-control" required>
+                            {% for account in accounts %}
+                            {% if account.account_number != '000-000000' %}
+                            <option value="{{ account.id }}" {% if transfer.account.id == account.id %}selected{% endif %}>
+                                {{ account.account_name }} {{ account.account_number }}
+                            </option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="transfer_date">Date of Transfer</label>
+                        <input type="date" name="transfer_date" id="transfer_date" 
+                               class="form-control" value="{{ transfer.date|date:'Y-m-d' }}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="amount">Amount</label>
+                        <input type="text" name="amount" id="amount" 
+                               class="form-control" value="{{ transfer.amount }}" placeholder="Amount">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="description">Description</label>
+                        <textarea name="description" id="description" 
+                                  class="form-control" rows="3">{{ transfer.description }}</textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

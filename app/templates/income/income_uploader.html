@@ -1,0 +1,53 @@
+{% extends 'layouts/base.html' %}
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% load static %}
+{% block content %}
+    <div>
+        {% include 'partials/_messages.html' %}
+        <div class="container mt-5">
+            {% if errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ errors.error }}
+                </div>
+            {% endif %}
+
+            <div class="text-center">
+                <h2 class="mb-4">Income Uploader</h2>
+                <form method="post" enctype="multipart/form-data" action="{% url 'income_uploader' %}">
+                    {% csrf_token %}
+
+                    <!-- Row 1: local_church Selection -->
+                    <div class="row justify-content-center mb-3 mt-5">
+                        <div class="col-md-4">
+                            <label for="local_church" class="form-label">Church</label>
+                            <select class="form-control" name="local_church" required>
+                                <option value="">Select Church</option>
+                                {% for local_church in local_churches %}
+                                    <option name="local_church" value="{{ local_church.id }}" {% if local_church in request.user.pastor_churches.all %}selected{% endif %}>{{ local_church.local_church_name.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: File Input -->
+                    <div class="row justify-content-center mb-3 mt-5">
+                        <div class="col-md-4">
+                            <input type="file" id="userFileInput" name="file" class="form-control-file" accept=".xlsx" required>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Submit Button and Download Button -->
+                    <div class="row justify-content-center mr-5 mt-5">
+                        <div class="col-md-12">
+                            <div id="selectedFileName" class="mt-3"></div>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-success btn-lg rounded">Upload Income Data</button>
+                                <a href="{% url 'download_income_uploader_sample' %}" class="btn btn-primary btn-lg rounded">Download Sample XLSX</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

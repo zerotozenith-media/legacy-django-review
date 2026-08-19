@@ -1,0 +1,106 @@
+<!--{% load static dict_filters %}-->
+
+<h1>Payment Allocation Reconciliation</h1>
+
+{% if not region_id or not selected_month or not selected_year %}
+<div class="alert alert-secondary mt-3">
+    <p>
+        Please select a <strong>Region</strong>, <strong>Month</strong>, and <strong>Year</strong>
+        from the options above to view the reconciliation.
+    </p>
+    <p>
+        Additionally, ensure that a <strong>bank statement</strong> is uploaded to proceed.
+    </p>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h4>Bank Statement Data</h4>
+                <div class="badge {% if reconciliation_matched %}badge-success{% else %}badge-danger{% endif %} m-1 w-100">
+                    <h5 class="mb-0 px-3 pt-3 text-white font-weight-bold">
+                        BANK STATEMENT DCLM/GCK
+                    </h5>
+                    <h1 class="mb-0 text-white font-weight-bold">
+                        ${{ bank_statement_dclm_gck|floatformat:2 }}
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h4>App Data</h4>
+                <div class="row">
+                    <div class="badge {% if reconciliation_matched %}badge-success{% else %}badge-danger{% endif %} m-1 w-100">
+                        <h5 class="mb-0 px-3 pt-3 text-white font-weight-bold">
+                            TOTAL ALLOCATION PAID DCLM/GCK
+                        </h5>
+                        <h1 class="mb-0 text-white font-weight-bold">
+                            ${{ total_allocation_paid_dclm_gck|floatformat:2 }}
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+            <h4>Reconciliation Details</h4>
+            <div class="d-flex align-items-baseline">
+                <form id="statement-form" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="text" name="upload_allocation_reconciliation_bank_statement" hidden>
+                    {{ form.as_p }}
+                    <input id="file-statement" type="file" name="file" onchange="submitForm1()">
+                    <button type="button" class="btn btn-primary"
+                            onclick="document.getElementById('file-statement').click();">
+                        Upload Bank Statement
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover" id="reconciliation_datatable">
+                <thead>
+                <tr>
+                    <th>Selected Year</th>
+                    <th>Selected Month</th>
+                    <th>Region</th>
+                    <th>Account Type</th>
+                    <th>DCLM Total</th>
+                    <th>GCK Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <h6 class="m-0">{{ selected_year}}</h6>
+                    </td>
+                    <td>
+                        <h6 class="m-0">{{ selected_month }}</h6>
+                    </td>
+                    <td>
+                        <h6 class="m-0">{{ region_name|capitalize_words }}</h6>
+                    </td>
+                    <td>
+                        <h6 class="m-0">{{ account_type }}</h6>
+                    </td>
+                    <td>
+                        <h6 class="m-0">${{ dclm_total|floatformat:2}}</h6>
+                    </td>
+                    <td>
+                        <h6 class="m-0">${{ gck_total|floatformat:2}}</h6>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

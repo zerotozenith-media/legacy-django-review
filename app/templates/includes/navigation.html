@@ -1,0 +1,107 @@
+{% load static %}
+{% load custom_tags %}
+
+{% reverse_url 'dashboard' as das_url %}
+{% reverse_url 'expenses' as exp_url %}
+{% reverse_url 'attendance_list' as att_url %}
+{% reverse_url 'user_add' as user_add_url %}
+{% reverse_url 'church_properties_list' as chu_url %}
+{% reverse_url 'transfer' as expenses_url %}
+{% reverse_url 'income' as income_url %}
+
+<header class="navbar pcoded-header navbar-expand-lg navbar-light">
+    <a id="go-back-arrow" href="javascript:history.back()"
+       class="go-back-arrow ml-4 mr-3 text-decoration-none d-none d-lg-block">
+      <i class="feather icon-arrow-left f-30"></i>
+    </a>
+  <div class="m-header">
+       <!-- Go Back Arrow -->
+    <a class="mobile-menu" id="mobile-collapse1" href="javascript:"><span></span></a>
+    <a href="" class="b-brand">
+      <div class="b-bg">
+        <img src="{% static 'img/logo.png' %}" width="55" height="55" style="border-radius: 10px;" />
+      </div>
+      <span class="b-title">DCLM CANADA</span>
+    </a>
+  </div>
+  <a class="mobile-menu" id="mobile-header" href="javascript:">
+    <img src="{% static 'img/logo.png' %}" width="55" height="55" style="border-radius: 10px;" />
+  </a>
+  <div class="collapse navbar-collapse">
+{#    <ul class="navbar-nav mr-auto">#}
+{#      <li><a href="javascript:" class="full-screen" onclick="javascript:toggleFullScreen()"><i#}
+{#            class="feather icon-maximize"></i></a>#}
+{#      </li>#}
+{#      <li class="nav-item dropdown">#}
+{#        <a class="dropdown-toggle" href="javascript:" data-toggle="dropdown">Dropdooown</a>#}
+{#      </li>#}
+{#      <li class="nav-item">#}
+{#        <div class="main-search">#}
+{#          <div class="input-group">#}
+{#            <input type="text" id="m-search" class="form-control" placeholder="Search . . .">#}
+{#            <a href="javascript:" class="input-group-append search-close">#}
+{#              <i class="feather icon-x input-group-text"></i>#}
+{#            </a>#}
+{#            <span class="input-group-append search-btn btn btn-primary">#}
+{#              <i class="feather icon-search input-group-text"></i>#}
+{#            </span>#}
+{#          </div>#}
+{#        </div>#}
+{#      </li>#}
+{#    </ul>#}
+    <ul class="navbar-nav ml-auto">
+      <li>
+        <h5 class="mb-0">
+          Welcome {{ request.user.full_name }}!!!
+        </h5>
+      </li>
+{#      <li>#}
+{#        <div class="dropdown">#}
+{#          <a class="dropdown-toggle" href="javascript:" data-toggle="dropdown"><i#}
+{#              class="icon feather icon-bell"></i></a>#}
+{#          <div class="dropdown-menu dropdown-menu-right notification">#}
+{#            <div class="noti-head">#}
+{#              <h6 class="d-inline-block m-b-0">Notifications</h6>#}
+{#              <div class="float-right">#}
+{#                <a href="javascript:" class="m-r-10">mark as read</a>#}
+{#                <a href="javascript:">clear all</a>#}
+{#              </div>#}
+{#            </div>#}
+{#            <ul class="noti-body">#}
+{#              <li class="n-title">#}
+{#                <p class="m-b-0"></p>#}
+{#              </li>#}
+{#            </ul>#}
+{#            <div class="noti-footer">#}
+{#              <a href="javascript:">show all</a>#}
+{#            </div>#}
+{#          </div>#}
+{#        </div>#}
+{#      </li>#}
+      <li>
+        <div class="dropdown drp-user">
+          <a href="javascript:" class="dropdown-toggle" data-toggle="dropdown" style="text-decoration: none">
+            <i class="feather icon-user f-30"></i>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right profile-notification">
+            <div class="pro-head">
+{#              <img src="{% static 'images/user/avatar-1.jpg' %}" class="img-radius" alt="Image">#}
+{#                <i class="feather icon-user"></i>#}
+              <span>{{ request.user.full_name }}</span>
+            </div>
+            <ul class="pro-body">
+              <li><a href="{% url 'user_profile' id=request.user.id %}" class="dropdown-item"><i class="feather icon-user"></i>Profile</a></li>
+              <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="feather icon-log-out"></i>Logout</a></li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<script>
+    $(document).ready(function() {
+  $('.dropdown-toggle').dropdown();
+});
+</script>

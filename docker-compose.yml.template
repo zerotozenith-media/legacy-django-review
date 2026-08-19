@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  web:
+    container_name: dclmca_cont
+    build:
+      context: .
+    entrypoint: bash
+    command: -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/usr/src/app/
+    ports:
+      - 8000:8000
+    environment:
+      - POSTGRESDB_NAME=dclma
+      - POSTGRESDB_USER=dclma
+      - POSTGRESDB_PASSWORD=dclma
+      - POSTGRESDB_HOST=postgres
+      - POSTGRESDB_PORT=5432
+      - SECRET_KEY=secretkeysample
+      - DEBUG=True
+      - GEMINI_API_KEY=''
+      - DEBUG_PROPAGATE_EXCEPTIONS=True
+    depends_on:
+      - postgres
+    networks:
+      - backend
+
+
+  postgres:
+    container_name: dclma_postgres
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=dclma
+      - POSTGRES_PASSWORD=dclma
+      - POSTGRES_DB=dclma
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
+    driver: bridge

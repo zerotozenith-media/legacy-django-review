@@ -1,0 +1,133 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Region Expenses</h5>
+                </div>
+                <div class="card-body">
+                    <h5>Add Region Expense</h5>
+                    <hr>
+                    <form action="{% url 'add-region-expenses' %}" method="post">
+                        {% include 'partials/_messages.html' %}
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="region" class="form-label fw-bold">Select Region</label>
+                                <select name="region" id="region" class="form-control" required>
+                                    <option value="">All Regions</option>
+                                    {% for region in regions %}
+                                    <option value="{{ region.id }}" {% if region.name == selected_region %}selected{% endif %}>
+                                        {{ region.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="">Date of Expense</label>
+                                <input type="date" class="form-control" name="expense_date" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="exampleFormControlSelect1">Category</label>
+                                <select class="form-control" name="category" id="category-select" required>
+                                    <option value="">Select a category</option>
+                                    {% for category in categories %}
+                                        <option name="category" value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="exampleFormControlSelect1">Sub Category</label>
+                                <select class="form-control" name="sub_category" id="sub-category-select"  required>
+                                    {% for sub_category in sub_categories %}
+                                        <option name="sub_category"
+                                                value="{{ sub_category.id }}" >{{ sub_category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="">Amount</label>
+                                <input type="text" class="form-control" id="amount" name="amount" placeholder="Amount" required>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="">Tax Amount</label>
+                                <input type="text" class="form-control" name="tax_amount" placeholder="Tax Amount">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="tax_category">Tax Category</label>
+                                <select class="form-control" name="tax_category" required>
+                                    {% for choice in expense.TAX_CATEGORY_CHOICES %}
+                                        <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Description</label>
+                            <textarea class="form-control" name="description" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+    <script>
+        $(document).ready(function () {
+            $('#category-select').change(function () {
+                var selectedCategoryId = $(this).val();
+                if (selectedCategoryId) {
+                    $.ajax({
+                        url: "{% url 'get-subcategories' %}",
+                        data: {category_id: selectedCategoryId},
+                        method: 'GET',
+                        success: function (data) {
+                            var subCategorySelect = $('#sub-category-select');
+                            subCategorySelect.empty();
+                            for (var i = 0; i < data.length; i++) {
+                                subCategorySelect.append($('<option>', {
+                                    value: data[i].id,
+                                    text: data[i].name
+                                }));
+                            }
+                        }
+                    });
+                } else {
+                    $('#sub-category-select').empty();
+                }
+            });
+            $('#amount').on('input', function () {
+            let amount = $(this).val();
+            amount = amount.replace(/[^0-9.]/g, '');
+            if (amount.split('.').length > 2) {
+                amount = amount.replace(/\.+$/, ''); 
+            }
+            if (parseFloat(amount) < 0 || amount === '-') {
+                amount = '';
+            }
+            $(this).val(amount);
+        });
+
+        $('#amount').on('blur', function () {
+            let amount = $(this).val();
+            if (amount !== '' && !isNaN(amount)) {
+                amount = parseFloat(amount).toFixed(2);
+            }
+            $(this).val(amount);
+        });
+        });
+    </script>
+{% endblock extra_js %}
+

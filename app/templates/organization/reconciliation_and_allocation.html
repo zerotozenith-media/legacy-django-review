@@ -1,0 +1,375 @@
+{% extends 'layouts/base.html' %}
+{% load static dict_filters %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+    <style>
+        /* Hide the file input */
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Style the button */
+        .upload-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .upload-btn:hover {
+            background-color: #0056b3;
+        }
+
+        p > label {
+            display: none;
+        }
+
+        .sticky-container {
+            position: sticky;
+            top: 0; /* Distance from the top of the viewport where it should stick */
+            background-color: #f6f6f6;
+            z-index: 1000;
+            padding: 10px; /* Optional: Add padding for better appearance */
+        }
+
+         #go-back-arrow {
+            display: none !important;
+          }
+
+    </style>
+
+{% endblock extrastyle %}
+{% block content %}
+    <!-- Add/Edit Modal -->
+    <div class="modal fade" id="updateAllocation" tabindex="-1" role="dialog"
+         aria-labelledby="updateAllocationModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportModalLabel">Update Allocation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateAllocationForm" method="post">
+                        {% csrf_token %}
+                        <h5 id="allocation_text" class="font-weight-bold"></h5>
+                        <input type="hidden" name="payment_allocation_id" id="payment_allocation_id">
+                        <label for="">Paid Amount</label>
+                        <input type="number" name="paid_amount" id="payment_paid_amount" class="form-control" required>
+                        <label for="">Payment Date</label>
+                        <input type="date" name="payment_date" id="payment_date" class="form-control" required>
+                        <label for="">Note</label>
+                        <textarea name="note" id="payment_note" cols="30" rows="10" class="form-control"
+                                  placeholder="Enter Text Here..."></textarea>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveAllocationBtn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="gckAllocation" tabindex="-1" role="dialog"
+         aria-labelledby="gckAllocationModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportModalLabel">Set GCK Allocation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="setgckcanadaAllocationForm" method="post">
+                        {% csrf_token %}
+                        <h5 id="allocation_text" class="font-weight-bold"></h5>
+                        <input type="hidden" name="gck_allocation">
+                        <label for="">Amount for GCK Canada</label>
+                        <input type="number" name="allocation_amount" class="form-control">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="savegckcandaAllocationBtn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="d-flex justify-content-end mb-3 sticky-container">
+        <select name="year" id="year" class="form-control" style="max-width: 150px">
+            <option value="">Select Year</option>
+            {% for year in years %}
+                <option value="{{ year }}"
+                        {% if selected_year|floatformat:0 == year|floatformat:0 %}selected{% endif %}>{{ year }}</option>
+            {% endfor %}
+        </select>
+        <select name="month" id="month" class="form-control mx-2" style="max-width: 150px">
+            <option value="">Select Month</option>
+            {% for month in months %}
+                <option value="{{ month.value }}"
+                        {% if selected_month|floatformat:0 == month.value|floatformat:0 %}selected{% endif %}>{{ month.name }}</option>
+            {% endfor %}
+        </select>
+        {% if not user_region %}
+            <select name="region_id" id="region_id" class="form-control" style="max-width: 250px">
+                <option value="">Select Region</option>
+                {% for region in all_regions %}
+                    <option value="{{ region.id }}"
+                            {% if region_id == region.id %}selected{% endif %}>{{ region.name|lower }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+    </div>
+    <h1>Reconciliation</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4>Bank Statement Data</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="badge {% if app_matches_income %}badge-success{% else %}badge-danger{% endif %} m-1 w-100">
+                                <h5 class="mb-0 p-3 text-white font-weight-bold">INCOME :
+                                    ${{ bank_income|floatformat:2 }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="badge {% if app_matches_expense %}badge-success{% else %}badge-danger{% endif %} m-1 w-100">
+                                <h5 class="mb-0 p-3 text-white font-weight-bold">EXPENSE :
+                                    ${{ bank_expense|floatformat:2 }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4>App Data</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="badge {% if app_matches_income %}badge-success{% else %}badge-danger{% endif %}  m-1 w-100">
+                                <h5 class="mb-0 p-3 text-white font-weight-bold">INCOME :
+                                    ${{ app_income|floatformat:2 }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="badge {% if app_matches_expense %}badge-success{% else %}badge-danger{% endif %} m-1 w-100">
+                                <h5 class="mb-0 p-3 text-white font-weight-bold">EXPENSE :
+                                    ${{ app_expense|floatformat:2 }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between mb-2">
+                <h4>Bank Statement Details</h4>
+                <div class="d-flex align-items-baseline">
+                    {% if can_upload %}
+                        <form id="upload-form" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="text" name="upload_file_for_recon" hidden>
+                            {{ form.as_p }}
+                            <input id="file-input" type="file" name="file" onchange="submitForm()">
+                            <button type="button" class="btn btn-primary"
+                                    onclick="document.getElementById('file-input').click();">
+                                Upload
+                            </button>
+                        </form>
+                    {% endif %}
+                    <a href="{% url 'export_reconciliation' %}" class="btn btn-primary ml-2">
+                        Download Sample Bank Statement
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover" id="reconciliation_datatable">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Region</th>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for object in reconciliation_objects %}
+                        <tr>
+                            <td>{{ object.id }}</td>
+                            <td>
+                                <h6 class="m-0">{{ object.region.name }}</h6>
+                            </td>
+                            <td>
+                                <h6 class="m-0">{{ object.date }}</h6>
+                            </td>
+                            <td>
+                                <h6 class="m-0">{{ object.description }}</h6>
+                            </td>
+                            <td>
+                                <h6 class="m-0">{{ object.recon_type }}</h6>
+                            </td>
+                            <td>
+                                <h6 class="m-0">{{ object.amount|floatformat:2 }}</h6>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <h1>Payment Allocation</h1>
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <h4>Allocation Payment List</h4>
+                {% if request.user.is_staff or request.user.role == 3 %}
+                    <button class="btn btn-primary mb-2" onclick="openGCKAllocationmodel()">Set GCK Canada Allocation
+                    </button>
+                {% endif %}
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover" id="income_datatable">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Region</th>
+                        <th>Allocation Date</th>
+                        <th>Payment Date</th>
+                        <th>Income</th>
+                        <th>Payment Due</th>
+                        <th>Paid Amount</th>
+                        <th>Remaining Amount</th>
+                        <th>Note</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for allocation in payment_allocation %}
+                        <tr>
+                            <td>{{ allocation.name|capitalize_words|upper }}</td>
+                            <td>
+                                <h6 class="m-0">{{ allocation.region.name|capitalize_words }}</h6>
+                            </td>
+                            <td>
+                                <h6 class="m-0">{{ allocation.date|date:"M, Y" }}</h6>
+                            </td>
+                            <td>
+                                <h6 class="m-0">{{ allocation.payment_date|default_if_none:"" }}</h6>
+                            </td>
+                            <td>
+                                <h6 class="m-0">{{ allocation.income|floatformat:2 }}</h6>
+                            </td>
+                            <td>
+                                <h6 class="m-0">{{ allocation.total_amount|floatformat:2 }}</h6>
+                            </td>
+                            <td>
+                                <h6 class="m-0">{{ allocation.paid_amount|floatformat:2 }}</h6>
+                            </td>
+                            <td>
+                                <h6 class="m-0">{{ allocation.total_amount|subtract:allocation.paid_amount|floatformat:2 }}</h6>
+                            </td>
+                            <td>
+                                <h6 class="m-0">{{ allocation.note }}</h6>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary"
+                                        onclick="openPaymentAllocationModal('{{ allocation.id }}', '{{ allocation.name|upper }}', '{{ allocation.date|date:'M, Y' }}','{{ allocation.region.name }}')">
+                                    Update
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if request.user.role == 3 or  request.user.is_superuser %}
+        {% include 'organization/allocation_recon.html' %}
+    {% endif %}
+
+    <script>
+        function submitForm1() {
+            document.getElementById('statement-form').submit();
+        }
+    </script>
+
+
+    <script>
+        function submitForm() {
+            document.getElementById('upload-form').submit();
+        }
+
+        $(document).ready(function () {
+            $('#reconciliation_datatable').DataTable();
+        });
+
+        $('#region_id, #month, #year').change(function () {
+            var regionId = $('#region_id').val();
+            var month = $('#month').val();
+            var year = $('#year').val();
+            window.location.href = `?region_id=${regionId}&month=${month}&year=${year}`;
+        });
+
+
+    </script>
+    <script>
+        function openPaymentAllocationModal(id, name, month, region) {
+            var allocationText = `You are updating the payment of: <br>Name : ${name} <br>Month : ${month} <br>Region : ${region}</strong>`
+            $('#allocation_text').html(allocationText)
+            $('#payment_allocation_id').val(id)
+            $('#updateAllocation').modal('show')
+            $.ajax({
+                url: `/payment_allocation/${id}/`,
+                type: 'GET',
+                success: function (data) {
+                    console.log(data);
+                    $('#payment_paid_amount').val(data.paid_amount);
+                    $('#payment_note').text(data.note);
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+
+        }
+
+        $('#saveAllocationBtn').on('click', function () {
+            $('#updateAllocationForm').submit()
+        })
+    </script>
+    <script>
+        function openGCKAllocationmodel() {
+            $('#gckAllocation').modal('show')
+        }
+
+        $('#savegckcandaAllocationBtn').on('click', function () {
+            $('#setgckcanadaAllocationForm').submit()
+        })
+    </script>
+
+
+{% endblock content %}

@@ -1,0 +1,177 @@
+version: "3.9"
+
+services:
+  app:
+    container_name: app
+    image: ${IMAGE_NAME}
+    build:
+      context: .
+      args:
+        - DEV=true
+    command: >
+            sh -c "python manage.py wait_for_db &&
+            python manage.py migrate &&
+            python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./app:/app
+      - dev-static-data:/vol/web
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DEBUG: ${DEBUG}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      CELERY_BROKER: ${CELERY_BROKER}
+      CELERY_BACKEND: ${CELERY_BACKEND}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
+      NATIONAL_OVERSEA_EMAIL: ${NATIONAL_OVERSEA_EMAIL}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - backend
+
+  db:
+    container_name: postgres_dclm
+    image: postgres:13-alpine
+    volumes:
+        - dev-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432"
+    networks:
+      - backend
+
+  redis:
+    image: redis
+    restart: unless-stopped
+    container_name: redis
+    volumes:
+      - /var/lib/redis/data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+
+  celery:
+    image: ${CELERY_IMAGE_NAME}
+    container_name: celery
+    restart: always
+    build:
+      context: .
+    command: celery --app=core worker -l INFO -Q celery,celery:1,celery:2,celery:3
+    volumes:
+      - ./app:/app
+      - dev-static-data:/vol/web
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      SECRET_KEY: ${SECRET_KEY}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      DEBUG: ${DEBUG}
+      CELERY_BROKER: ${CELERY_BROKER}
+      CELERY_BACKEND: ${CELERY_BACKEND}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
+      NATIONAL_OVERSEA_EMAIL: ${NATIONAL_OVERSEA_EMAIL}
+    depends_on:
+      - app
+      - redis
+    networks:
+      - backend
+
+  celery-beat:
+    image: ${CELERY_BEAT_IMAGE_NAME}
+    container_name: celery_beat
+    restart: always
+    build:
+      context: .
+    command: celery --app=core beat --loglevel=info
+    volumes:
+      - ./app:/app
+      - dev-static-data:/vol/web
+      - dev-beat-schedule-data:/app/celerybeat-schedule
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      SECRET_KEY: ${SECRET_KEY}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      DEBUG: ${DEBUG}
+      CELERY_BROKER: ${CELERY_BROKER}
+      CELERY_BACKEND: ${CELERY_BACKEND}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
+      NATIONAL_OVERSEA_EMAIL: ${NATIONAL_OVERSEA_EMAIL}
+    depends_on:
+      - redis
+      - app
+    networks:
+      - backend
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    restart: always
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - backend
+
+  flower:
+    image: mher/flower
+    container_name: flower
+    restart: always
+    ports:
+      - "5555:5555"
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      SECRET_KEY: ${SECRET_KEY}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      DEBUG: ${DEBUG}
+      CELERY_BROKER: ${CELERY_BROKER}
+      CELERY_BACKEND: ${CELERY_BACKEND}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
+      NATIONAL_OVERSEA_EMAIL: ${NATIONAL_OVERSEA_EMAIL}
+    networks:
+      - backend
+
+volumes:
+  dev-db-data:
+  dev-static-data:
+  dev-beat-schedule-data:
+
+networks:
+  backend:
+    driver: bridge

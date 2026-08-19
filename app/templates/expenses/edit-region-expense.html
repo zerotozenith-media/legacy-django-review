@@ -1,0 +1,170 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+<style>
+    #go-back-arrow {
+        display: none !important;
+    }
+</style>
+{% endblock extrastyle %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'expenses' %}">Expenses</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit Expense</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <form action="{% url 'region-expense-edit' expense.id %}" method="post">
+                {% include 'partials/_messages.html' %}
+                {% csrf_token %}
+                <!-- Form Row for Church -->
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="region" class="form-label fw-bold">Select Region</label>
+                        <select name="region" id="region" class="form-control" required>
+                            <option value="">All Regions</option>
+                            {% for region in regions %}
+                            <option value="{{ region.id }}" {% if region.id == expense.region.id %}selected{% endif %}>
+                                {{ region.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="expense_date">Date of Expense</label>
+                        <input type="date" value="{{ values.date | date:'Y-m-d' }}" class="form-control"
+                            name="expense_date">
+                    </div>
+                </div>
+
+                <!-- Form Row for Amounts -->
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="amount">Amount</label>
+                        <input type="text" class="form-control" id="amount" name="amount" value="{{ values.amount|floatformat:2 }}">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="tax_amount">Tax Amount</label>
+                        <input type="text" class="form-control" name="tax_amount" placeholder="Tax Amount"
+                            value="{{ values.tax_amount|floatformat:2 }}">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="tax_category">Tax Category</label>
+                        <select class="form-control" name="tax_category">
+                            {% for choice in expense.TAX_CATEGORY_CHOICES %}
+                            <option value="{{ choice.0 }}" {% if choice.0 == values.tax_category %} selected {% endif %}>
+                                {{ choice.1 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Form Row for Categories -->
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="category">Category</label>
+                        <select class="form-control" name="category" id="category-select" required>
+                            <option value="{{ values.category.id }}">{{ values.category.name }}</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category.id == values.category.id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="sub_category">Sub-Category</label>
+                        <select class="form-control" name="sub_category" id="sub-category-select" required>
+                            <option value="{{ values.sub_category.id }}">{{ values.sub_category.name }}</option>
+                            {% for sub_category in sub_categories %}
+                            <option value="{{ sub_category.id }}" {% if sub_category.id == values.sub_category.id %}selected{% endif %}>
+                                {{ sub_category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Form Row for Description -->
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <label for="description">Description</label>
+                        <input type="text" class="form-control" name="description" value="{{ values.description }}">
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-row">
+                    <div class="col-md-12 text-right">
+                        <input type="submit" value="Save" class="btn btn-primary">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        $('#category-select').change(function () {
+            var selectedCategoryId = $(this).val();
+            if (selectedCategoryId) {
+                $.ajax({
+                    url: "{% url 'get-subcategories' %}",
+                    data: { category_id: selectedCategoryId },
+                    method: 'GET',
+                    success: function (data) {
+                        var subCategorySelect = $('#sub-category-select');
+                        subCategorySelect.empty();
+                        for (var i = 0; i < data.length; i++) {
+                            subCategorySelect.append($('<option>', {
+                                value: data[i].id,
+                                text: data[i].name
+                            }));
+                        }
+                    }
+                });
+            } else {
+                $('#sub-category-select').empty();
+            }
+        });
+        $('#amount').on('input', function () {
+            let amount = $(this).val();
+            amount = amount.replace(/[^0-9.]/g, '');
+            if (amount.split('.').length > 2) {
+                amount = amount.replace(/\.+$/, ''); 
+            }
+            if (parseFloat(amount) < 0 || amount === '-') {
+                amount = '';
+            }
+            $(this).val(amount);
+        });
+
+        $('#amount').on('blur', function () {
+            let amount = $(this).val();
+            if (amount !== '' && !isNaN(amount)) {
+                amount = parseFloat(amount).toFixed(2);
+            }
+            $(this).val(amount);
+        });
+
+    });
+</script>
+{% endblock extra_js %}

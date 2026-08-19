@@ -1,0 +1,311 @@
+{% load i18n static %}
+
+<nav class="pcoded-navbar">
+    <div class="navbar-wrapper">
+        <div class="navbar-brand header-logo">
+            <a href="" class="b-brand">
+                <div class="b-bg">
+                    <img src="{% static 'img/logo.png' %}" width="55" height="55" style="border-radius: 10px;"/>
+                </div>
+                <div class="d-flex flex-column align-items-center">
+                    <span class="b-title">DCLM CANADA</span>
+                    <span class="b-title" style="font-size: 10px">CHURCH MANAGEMENT SYSTEM</span>
+                </div>
+
+            </a>
+            <a class="mobile-menu d-md-none" id="mobile-collapse" href="javascript:"><span></span></a>
+        </div>
+        <div class="navbar-content scroll-div">
+            <ul class="nav pcoded-inner-navbar">
+                {% if request.user.role != 5 %}
+                <li data-username="dashboard Default" class="nav-item {% if request.path == "/" %}active{% endif %}">
+                    <a href="{% url 'dashboard' %}" class="nav-link">
+                        <span class="pcoded-micon"><i class="fa fa-home"></i></span><span
+                            class="pcoded-mtext">Dashboard</span>
+                    </a>
+                </li>
+                {% if request.user.role == 2 or request.user.role == 3 or request.user.role == 4 or request.user.is_superuser %}
+                    <li data-username="dashboard Default" class="nav-item {% if request.path == '/expense/' %}active{% endif %}">
+                        <a href="{% url 'expenses' %}" class="nav-link ">
+                            <span class="pcoded-micon"><i class="fa fa-credit-card"></i></span><span
+                                class="pcoded-mtext">Expenses</span>
+                        </a>
+                    </li>
+                {% endif %}
+                {% if request.user.role == 2 or request.user.role == 3 or request.user.role == 4 or request.user.is_superuser %}
+                    <li data-username="dashboard Default" class="nav-item">
+                        <a href="javascript:;" class="nav-link toggle-submenu">
+                            <span class="pcoded-micon"><i class="fa fa-suitcase"></i></span>
+                            <span class="pcoded-mtext">Income</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                        <ul class="pcoded-submenu submenu-income" >
+                            <h6 class="text-white" style="margin-left: 1rem;font-weight: bolder">Cash</h6>
+                            <li class="sub-item">
+                                <a href="{% url 'cash-donation-list' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-dollar-sign"></i></span>
+                                    <span class="pcoded-mtext">Tithe & Offering - CAD</span>
+                                </a>
+                            </li>
+                            <li class="sub-item">
+                                <a href="{% url 'offerings_usd_list' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-dollar-sign"></i></span>
+                                    <span class="pcoded-mtext">Tithe & Offering - USD</span>
+                                </a>
+                            </li>
+                             {% if request.user.role == 3 or request.user.is_superuser or request.user.role == 4 %}
+                            <h6 class="text-white" style="margin-left: 1rem;font-weight: bolder">Online</h6>
+                            <li class="sub-item">
+                                <a href="{% url 'interac_transfer_list' %}" class="nav-link "><span
+                                        class="pcoded-micon"><i
+                                        class="fas fa-money-check-alt"></i></span><span
+                                        class="pcoded-mtext">Bank Donations</span>
+                                </a>
+                            </li>
+                             {% endif %}
+                            <h6 class="text-white" style="margin-left: 1rem;font-weight: bolder">Others</h6>
+                            <li class="sub-item">
+                                <a href="{% url 'donation-list' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-suitcase"></i></span>
+                                    <span class="pcoded-mtext">Donation In Kind</span>
+                                </a>
+                            </li>
+                            <li class="sub-item">
+                                <a href="{% url 'income' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-suitcase"></i></span>
+                                    <span class="pcoded-mtext">Other Income</span>
+                                </a>
+                            </li>
+                            <li class="sub-item">
+                                <a href="{% url 'source-list' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-list"></i></span>
+                                    <span class="pcoded-mtext">Source List</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                {% endif %}
+                {% if request.user.role == 3 or request.user.role == 4 or request.user.is_superuser %}
+                    <li data-username="dashboard Default" class="nav-item {% if request.path == '/transfer/' %}active{% endif %}">
+                        <a href="{% url 'transfer' %}" class="nav-link ">
+                            <span class="pcoded-micon"><i class="fa fa-money-bill-wave"></i></span><span
+                                class="pcoded-mtext">Interbank Transfer</span>
+                        </a>
+                    </li>
+                {% endif %}
+                {% if request.user.role == 3 or request.user.role == 4 or request.user.is_superuser %}
+                    <li data-username="dashboard Default"
+                        class="nav-item {% if request.path == '/detail_reports/' %}active{% endif %}">
+                        <a href="{% url 'detail_report_view' %}" class="nav-link ">
+                            <span class="pcoded-micon"><i class="fa fa-credit-card"></i></span><span
+                                class="pcoded-mtext">Detailed Report</span>
+                        </a>
+                    </li>
+                {% endif %}
+                {% if request.user.role == 2 or request.user.role == 3 or request.user.role == 4 or request.user.is_superuser %}
+                    <li data-username="Attendance" class="nav-item">
+                        <a href="javascript:;" class="nav-link toggle-submenu">
+                            <span class="pcoded-micon"><i class="fa fa-calendar-check"></i></span>
+                            <span class="pcoded-mtext">Attendance</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                        <ul class="pcoded-submenu submenu-attendance">
+                            <li class="sub-item">
+                                <a href="{% url 'attendance_list' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-calendar"></i></span>
+                                    <span class="pcoded-mtext">Church Attendance</span>
+                                </a>
+                            </li>
+                            <li class="sub-item">
+                                <a href="{% url 'gck_attendance_list' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-church"></i></span>
+                                    <span class="pcoded-mtext">GCK Reports</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li data-username="dashboard Default" class="nav-item {% if request.path == '/properties/' %}active{% endif %}">
+                        <a href="{% url 'church_properties_list' %}" class="nav-link ">
+                            <span class="pcoded-micon"><i class="fa fa-university"></i></span><span
+                                class="pcoded-mtext">Church Properties</span>
+                        </a>
+                    </li>
+                    <li data-username="marriage records" class="nav-item {% if request.path == '/marriage/' %}active{% endif %}">
+                        <a href="{% url 'list_marriage_records' %}" class="nav-link">
+                            <span class="pcoded-micon"><i class="fa fa-heart"></i></span>
+                            <span class="pcoded-mtext">Marriage Records</span>
+                        </a>
+                    </li>
+                        {% if not request.user.role == 2 and not request.user.role == 1 %}
+                        <li data-username="dashboard Default"
+                            class="nav-item {% if request.path == '/reconciliation_n_allocation/' %}active{% endif %}">
+                            <a href="{% url 'reconciliation_n_allocation' %}" class="nav-link ">
+                                <span class="pcoded-micon"><i class="fa fa-file"></i></span><span
+                                    class="pcoded-mtext">Reconciliation & Allocation</span>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                {% endif %}
+                {% if request.user.role == 1 or request.user.role == 3 or request.user.role == 4 or request.user.is_superuser %}
+                    <li data-username="dashboard Default" class="nav-item {% if request.path == '/contributor/receipts/' %}active{% endif %}">
+                        <a href="{% url 'receipts_generation_page' %}" class="nav-link ">
+                            <span class="pcoded-micon"><i class="fa fa-receipt"></i></span><span
+                                class="pcoded-mtext">Receipts</span>
+                        </a>
+                    </li>
+                {% endif %}
+                {% if request.user.role == 1 or request.user.role == 3 or request.user.role == 4 or request.user.is_superuser %}
+                    <li data-username="dashboard Default" class="nav-item">
+                        <a href="javascript:;" class="nav-link toggle-submenu">
+                            <span class="pcoded-micon"><i class="fa fa-chart-bar"></i></span>
+                            <span class="pcoded-mtext">Financial Reports</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                        <ul class="pcoded-submenu submenu-financial-reports">
+                            <li class="sub-item">
+                                <a href="{% url 'financial_reports:summary_income_expenditure' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-table"></i></span>
+                                    <span class="pcoded-mtext">Summary of Regions Accounts</span>
+                                </a>
+                            </li>
+                            <li class="sub-item">
+                                <a href="{% url 'financial_reports:t3010_resources' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-file-alt"></i></span>
+                                    <span class="pcoded-mtext">T 3010 Resources</span>
+                                </a>
+                            </li>
+                            <li class="sub-item">
+                                <a href="{% url 'financial_reports:usd_account' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-dollar-sign"></i></span>
+                                    <span class="pcoded-mtext">USD Account</span>
+                                </a>
+                            </li>
+                            <li class="sub-item">
+                                <a href="{% url 'financial_reports:inter_transfer_template' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-money-bill-wave"></i></span>
+                                    <span class="pcoded-mtext">Inter Transfer Template</span>
+                                </a>
+                            </li>
+                            <li class="sub-item">
+                                <a href="{% url 'financial_reports:asset_liability_statement' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-balance-scale"></i></span>
+                                    <span class="pcoded-mtext">Statement of Asset &amp; Liab</span>
+                                </a>
+                            </li>
+                            <li class="sub-item">
+                                <a href="{% url 'financial_reports:assets_bought' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-shopping-cart"></i></span>
+                                    <span class="pcoded-mtext">Asset Bought in the Year</span>
+                                </a>
+                            </li>
+                            <li class="sub-item">
+                                <a href="{% url 'financial_reports:regions_bank_stmt_balances' %}" class="sub-link">
+                                    <span class="pcoded-micon"><i class="fa fa-university"></i></span>
+                                    <span class="pcoded-mtext">Regions Bank Stmt Balances</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                {% endif %}
+                {% if request.user.role == 3 or request.user.is_superuser or request.user.role == 4 or request.user.role == 2 %}
+                    <li class="nav-item pcoded-menu-caption">
+                        <span style="font-size: medium">Admin Settings</span>
+                    </li>
+                    <li data-username="Admin Page" class="nav-item {% if request.path == '/authentication/users/' %}active{% endif %}">
+                        <a href="{% url 'user_list' %}" class="nav-link">
+                            <span class="pcoded-micon"><i class="fas fa-users"></i></span>
+                            <span class="pcoded-mtext">Registered Users</span>
+                        </a>
+                    </li>
+                    <li data-username="Admin Page" class="nav-item {% if request.path == '/authentication/miscellaneous-users/' %}active{% endif %}">
+                        <a href="{% url 'miscellaneous_users_list' %}" class="nav-link">
+                            <span class="pcoded-micon"><i class="fas fa-user-tag"></i></span>
+                            <span class="pcoded-mtext">Miscellaneous Users</span>
+                        </a>
+                    </li>
+
+                {% endif %}
+                <li data-username="Admin Page" class="nav-item {% if '/authentication/profile/' in request.path %}active{% endif %}"><a href="{% url 'user_profile' id=request.user.id %}"
+                                                                   class="nav-link"><span
+                        class="pcoded-micon"><i class="feather icon-user"></i></span><span
+                        class="pcoded-mtext">Profile</span></a>
+                </li>
+                <li data-username="Admin Page" class="nav-item {% if request.path == '/authentication/help/' %}active{% endif %} mb-5">
+                    <a href="{% url 'help' %}" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="right" title="Click for help!">
+                        <span class="pcoded-micon">
+                            <i class="fa fa-question-circle"></i>
+                        </span>
+                        <span class="pcoded-mtext">Help</span>
+                    </a>
+                </li>
+                {% else %}
+                 <li data-username="marriage records" class="nav-item {% if request.path == '/marriage/' %}active{% endif %}">
+                        <a href="{% url 'list_marriage_records' %}" class="nav-link">
+                            <span class="pcoded-micon"><i class="fa fa-heart"></i></span>
+                            <span class="pcoded-mtext">Marriage Records</span>
+                        </a>
+                    </li>
+                  <li data-username="Admin Page" class="nav-item {% if '/authentication/profile/' in request.path %}active{% endif %}"><a href="{% url 'user_profile' id=request.user.id %}"
+                                                                   class="nav-link"><span
+                        class="pcoded-micon"><i class="feather icon-user"></i></span><span
+                        class="pcoded-mtext">Profile</span></a>
+                </li>
+                  <li data-username="Admin Page" class="nav-item {% if request.path == '/authentication/help/' %}active{% endif %} mb-5">
+                    <a href="{% url 'help' %}" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="right" title="Click for help!">
+                        <span class="pcoded-micon">
+                            <i class="fa fa-question-circle"></i>
+                        </span>
+                        <span class="pcoded-mtext">Help</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+<style>
+    /* Remove underline on hover for anchor tags within the submenu */
+    .submenu-income .sub-link:hover {
+        text-decoration: none;
+    }
+
+    .submenu-offerings .sub-link:hover {
+        text-decoration: none;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        $('.submenu-income').hide(); // Hide submenus by default
+
+        $('.toggle-submenu').click(function () {
+            $(this).next('.submenu-income').slideToggle();
+        });
+
+        $('.submenu-offerings').hide(); // Hide submenus by default
+
+        $('.toggle-submenu').click(function () {
+            $(this).next('.submenu-offerings').slideToggle();
+        });
+        $('.submenu-financial-reports').hide(); // Hide submenus by default
+    });
+</script>
+<style>
+    /* Remove underline on hover for anchor tags within the submenu */
+    .submenu-attendance .sub-link:hover {
+        text-decoration: none;
+    }
+    .submenu-financial-reports .sub-link:hover {
+        text-decoration: none;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        $('.submenu-attendance').hide(); // Hide submenus by default
+
+        $('.toggle-submenu').click(function () {
+            $(this).next('.submenu-attendance').slideToggle();
+        });
+    });
+</script>

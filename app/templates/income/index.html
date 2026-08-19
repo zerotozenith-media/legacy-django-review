@@ -1,0 +1,231 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% block extrastyle %}
+    <style>
+         #go-back-arrow {
+            display: none !important;
+          }
+
+    </style>
+{% endblock extrastyle %}
+
+
+{% block content %}
+    {% include 'partials/_messages.html' %}
+    {% include "includes/filter_bar.html" %}
+    <div class="row">
+        <!--[ Recent Activity ] start-->
+        <div class="col-xl-12 col-md-6">
+            <div class="card Recent-Users">
+                <div class="card-header d-flex justify-content-between">
+                    <h5>Church Income</h5>
+                    <div>
+                        <a href="{% url 'add-income' %}" class="btn btn-primary">Add Income</a>
+                        <a href="{% url 'income_uploader' %}" class="btn btn-primary">Import Income</a>
+                    </div>
+                </div>
+                <div class="card-block px-0 py-3 m-2">
+                    <div class="col-md-4 pull-right mb-4">
+                        <div id="reportrange"
+                             style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                            <i class="fa fa-search"></i>&nbsp;
+                            <span></span>
+                        </div>
+
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="income_datatable">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>Church</th>
+                                <th>Amount (CAD)</th>
+                                <th>Source</th>
+                                <th>Description</th>
+                                 <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for income in page_obj %}
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <h6 class="m-0">{{ income.date }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ income.local_church.local_church_name.title }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ income.amount|floatformat:2 }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ income.source.name }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ income.description }}</h6>
+                                    </td>
+                                    <td class="text-center">
+
+                                        <h6 class="m-0 text-c-green"></h6>
+                                        <a href="{% url 'income-edit' income.id %}">
+                                            <i class="fa fa-edit text-primary" title="Edit"></i>
+                                        </a>
+                                          <a href="{% url 'income-delete' income.id   %}"
+                                               id="delete_cash_donation_{{ income.id }}">
+                                                <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                            </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--[ Recent Users ] end-->
+    </div>
+
+{% if request.user.role == 3 or request.user.role == 4 or request.user.is_staff %}
+    <div class="row">
+        <!--[ Recent Activity ] start-->
+        <div class="col-xl-12 col-md-6">
+            <div class="card Recent-Users">
+                <div class="card-header d-flex justify-content-between">
+                    <h5>Region Income</h5>
+                    <div>
+                        <a href="{% url 'add-region-income' %}" class="btn btn-primary">Add Region Income</a>
+                    </div>
+                </div>
+                <div class="card-block px-0 py-3 m-2">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="region_income_datatable">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>Region</th>
+                                <th>Amount (CAD)</th>
+                                <th>Source</th>
+                                <th>Description</th>
+                                 <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for income in region_income %}
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <h6 class="m-0">{{ income.date }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ income.region.name }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ income.amount|floatformat:2 }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ income.source.name }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ income.description }}</h6>
+                                    </td>
+                                    <td class="text-center">
+
+                                        <h6 class="m-0 text-c-green"></h6>
+                                        <a href="{% url 'region-income-edit' income.id %}">
+                                            <i class="fa fa-edit text-primary" title="Edit"></i>
+                                        </a>
+                                          <a href="{% url 'region-income-delete' income.id   %}"
+                                               id="delete_cash_donation_{{ income.id }}">
+                                                <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                            </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--[ Recent Users ] end-->
+    </div>
+{% endif %}
+    <!-- [ Main Content ] end -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        $('#income_datatable').DataTable();
+
+        // Add delete functionality
+        document.querySelectorAll('[id^="delete_cash_donation_"]').forEach(item => {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                const deleteUrl = event.currentTarget.getAttribute('href');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You are about to delete this donation!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Send DELETE request using fetch
+                        fetch(deleteUrl, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}', // Django CSRF Token
+                            },
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    Swal.fire(
+                                        'Deleted!',
+                                        'The donation has been deleted.',
+                                        'success'
+                                    ).then(() => {
+                                        location.reload(); // Reload the page
+                                    });
+                                } else {
+                                    Swal.fire(
+                                        'Error!',
+                                        'An error occurred while deleting the donation.',
+                                        'error'
+                                    );
+                                }
+                            })
+                            .catch(() => {
+                                Swal.fire(
+                                    'Error!',
+                                    'Unable to send the delete request.',
+                                    'error'
+                                );
+                            });
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+
+{% endblock content %}
+
+{% block extra_js %}
+    <script>
+
+        $(document).ready(function () {
+            $('#income_datatable').DataTable();
+             $('#region_income_datatable').DataTable();
+            dateRangeFilter('/income');
+        });
+
+    </script>
+
+{% endblock extra_js %}

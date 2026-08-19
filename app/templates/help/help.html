@@ -1,0 +1,500 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+
+{% block extrastyle %}
+<style>
+    /* Adjusting sidebar for larger screens */
+    @media (min-width: 768px) {
+        #sidebar {
+            visibility: visible !important; /* Ensure it's visible */
+            transform: none !important;    /* Remove slide-in animation */
+            position: relative !important; /* Static position */
+            height: 100vh;                 /* Full height for static sidebar */
+            z-index: 1
+        }
+
+        .offcanvas-header {
+            display: none !important; /* Hide the header for static view */
+        }
+
+        .menu-button {
+            display: none; /* Hide the menu button on larger screens */
+        }
+    }
+
+    .list-item-bg {
+        background-color: #DDDDDF66;
+    }
+
+
+
+</style>
+{% endblock extrastyle %}
+
+{% block content %}
+<!-- Menu Button (Visible on Small Screens Only) -->
+<button class="btn btn-primary menu-button d-md-none ml-0 mt-1 w-20" type="button" data-bs-toggle="offcanvas"
+        data-bs-target="#sidebar"
+        aria-controls="sidebar">
+    <i class="bi bi-list"></i> Menu
+</button>
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div class="offcanvas offcanvas-start flex-shrink-0 p-3 bg-light"  id="sidebar"
+         aria-labelledby="sidebar-label" style="width: 280px; border-right: 1px solid #ddd; height: 100vh;">
+        <h5 class="text-primary mb-3">Documentation</h5>
+        <ul class="list-unstyled">
+            <!-- General Section -->
+            {% if request.user.role != 5 %}
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#auth-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-shield-lock me-2 text-primary"></i> General
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="auth-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="general-overview"><i class="bi bi-card-text me-2 text-secondary"></i>
+                            Overview</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="registered-users"><i class="bi bi-people me-2 text-secondary"></i>
+                            Registered Users</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="misc-users"><i class="bi bi-people-fill me-2 text-secondary"></i>
+                            Miscellaneous Users</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="anonymous-users"><i class="bi bi-person me-2 text-secondary"></i>
+                            Anonymous
+                            Users</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="login"><i class="bi bi-box-arrow-in-right me-2 text-secondary"></i>
+                            Login</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="register"><i class="bi bi-person-plus me-2 text-secondary"></i>
+                            Register</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="forgot-password"><i class="bi bi-key me-2 text-secondary"></i> Forgot
+                            Password</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="profile"><i class="bi bi-person-circle me-2 text-secondary"></i>
+                            Profile</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="contributions"><i
+                                class="bi bi-currency-dollar me-2 text-secondary"></i>
+                            Contributions</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="special-contributions"><i class="bi bi-gift me-2 text-secondary"></i>
+                            Special Contributions</a></li>
+                    </ul>
+                </div>
+            </li>
+            <!-- Dashboard Section -->
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#dashboard-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-speedometer2 me-2 text-primary"></i> Dashboard
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="dashboard-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="dashboard-overview"><i class="bi bi-list-ul me-2 text-secondary"></i>
+                            Overview</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="dashboard-charts"><i class="bi bi-bar-chart me-2 text-secondary"></i>
+                            Charts</a></li>
+                    </ul>
+                </div>
+            </li>
+            <!-- Expenses Section -->
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#expenses-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-cash-stack me-2 text-primary"></i> Expenses
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="expenses-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="expenses-overview"><i class="bi bi-card-text me-2 text-secondary"></i>
+                            Overview</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="add-expenses"><i class="bi bi-plus-circle me-2 text-secondary"></i> Add
+                            Expenses</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="import-expenses"><i
+                                class="bi bi-file-earmark-arrow-down me-2 text-secondary"></i> Import Expenses</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <!-- 4. Income Section -->
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#income-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-wallet2 me-2 text-primary"></i> Income
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="income-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="income-overview"><i class="bi bi-card-text me-2 text-secondary"></i>
+                            Overview</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="import-offerings"><i
+                                class="bi bi-file-earmark-arrow-down me-2 text-secondary"></i> Import Offerings
+                            CAD/USD</a>
+                        </li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="add-offerings"><i class="bi bi-plus-circle me-2 text-secondary"></i>
+                            Add
+                            Offerings CAD/USD</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="add-cheque-deposit"><i class="bi bi-cash-coin me-2 text-secondary"></i>
+                            Add
+                            Cheque Deposit</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="add-single-interac"><i
+                                class="bi bi-credit-card me-2 text-secondary"></i>
+                            Add Single Interact Deposit</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="add-multiple-interac"><i
+                                class="bi bi-credit-card-2-back me-2 text-secondary"></i> Add Multiple Interac
+                            Deposit</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="other-income"><i class="bi bi-cash me-2 text-secondary"></i> Other
+                            Income</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="source-list"><i class="bi bi-list-task me-2 text-secondary"></i> Source
+                            List</a></li>
+                    </ul>
+                </div>
+            </li>
+            <!-- 5. Interbank Transfer -->
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#interbank-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-bank me-2 text-primary"></i> Interbank Transfer
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="interbank-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="transfer-overview"><i class="bi bi-card-text me-2 text-secondary"></i>
+                            Overview</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="add-transfer"><i class="bi bi-plus-circle me-2 text-secondary"></i> Add
+                            Transfer</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="import-transfer"><i
+                                class="bi bi-file-earmark-arrow-down me-2 text-secondary"></i> Import Transfer</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <!-- 6. Detailed Report -->
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#detailed-report-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-graph-up-arrow me-2 text-primary"></i> Detailed Report
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="detailed-report-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="detailed-report-overview"><i
+                                class="bi bi-card-text me-2 text-secondary"></i> Overview</a></li>
+                    </ul>
+                </div>
+            </li>
+            <!-- 7. Attendance -->
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#attendance-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-calendar-check me-2 text-primary"></i> Attendance
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="attendance-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="attendance-overview"><i
+                                class="bi bi-card-text me-2 text-secondary"></i>
+                            Overview</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="add-attendance"><i class="bi bi-plus-circle me-2 text-secondary"></i>
+                            Add
+                            Attendance</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="import-attendance"><i
+                                class="bi bi-file-earmark-arrow-down me-2 text-secondary"></i> Import Attendance</a>
+                        </li>
+                         <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="gck-reports"><i
+                                class="bi bi-file-earmark-arrow-down me-2 text-secondary"></i> GCK Reports</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <!-- 8. Church Properties -->
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#church-properties-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-building me-2 text-primary"></i> Church Properties
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="church-properties-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="church-properties-overview"><i
+                                class="bi bi-card-text me-2 text-secondary"></i> Overview</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="add-property"><i class="bi bi-plus-circle me-2 text-secondary"></i> Add
+                            Property</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="import-properties"><i
+                                class="bi bi-file-earmark-arrow-down me-2 text-secondary"></i> Import Properties</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+               <!-- Expenses Section -->
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#marriage-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-cash-stack me-2 text-primary"></i> Marriage Records
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="marriage-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="marriage"><i class="bi bi-card-text me-2 text-secondary"></i>
+                            Overview</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <!-- 9. Reconciliation and Allocation -->
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#reconciliation-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center text-wrap">
+                        <i class="bi bi-arrow-left-right me-2 text-primary"></i> Reconciliation
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="reconciliation-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="reconciliation-overview"><i
+                                class="bi bi-card-text me-2 text-secondary"></i> Overview</a></li>
+                    </ul>
+                </div>
+            </li>
+            <!-- 10. Receipts -->
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#receipts-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-receipt me-2 text-primary"></i> Receipts
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="receipts-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="receipts-overview"><i class="bi bi-card-text me-2 text-secondary"></i>
+                            Overview</a></li>
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="generate-tax-receipts"><i
+                                class="bi bi-file-earmark-text me-2 text-secondary"></i> Generate Tax Receipts</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            {% else %}
+            <li class="mb-3">
+                <button class="btn btn-toggle d-flex justify-content-between align-items-center w-100 px-2 py-2 rounded border-0 collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#marriage-collapse"
+                        aria-expanded="false">
+                    <span class="d-flex align-items-center">
+                        <i class="bi bi-cash-stack me-2 text-primary"></i> Marriage Records
+                    </span>
+                    <i class="arrow-icon bi bi-chevron-right"></i>
+                </button>
+                <div class="collapse" id="marriage-collapse">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li><a href="#" class="d-flex align-items-center px-3 py-2 text-decoration-none rounded"
+                               data-content="marriage"><i class="bi bi-card-text me-2 text-secondary"></i>
+                            Overview</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-grow-1 p-4" id="main-content">
+        <!-- Default content will be loaded here -->
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Script to toggle arrow direction
+    document.querySelectorAll('.btn.btn-toggle').forEach(button => {
+        button.addEventListener('click', function () {
+            const icon = button.querySelector('.arrow-icon');
+            const isExpanded = !this.classList.contains('collapsed');
+            if (isExpanded) {
+                icon.classList.remove('bi-chevron-right');
+                icon.classList.add('bi-chevron-down');
+            } else {
+                icon.classList.remove('bi-chevron-down');
+                icon.classList.add('bi-chevron-right');
+            }
+        });
+    });
+
+    // Dynamic content loading with external HTML files
+    const contentMap = {
+        "general-overview": { folder: "general", file: "general-overview" },
+        "registered-users": { folder: "general", file: "registered-users" },
+        "misc-users": { folder: "general", file: "misc-users" },
+        "anonymous-users": { folder: "general", file: "anonymous-users" },
+        "login": { folder: "general", file: "login" },
+        "register": { folder: "general", file: "register" },
+        "forgot-password": { folder: "general", file: "forgot-password" },
+        "profile": { folder: "general", file: "profile" },
+        "contributions": { folder: "general", file: "contributions" },
+        "special-contributions": { folder: "general", file: "special-contributions" },
+        "dashboard-overview": { folder: "dashboard", file: "dashboard-overview" },
+        "dashboard-charts": { folder: "dashboard", file: "dashboard-charts" },
+        "expenses-overview": { folder: "expenses", file: "expenses-overview" },
+        "add-expenses": { folder: "expenses", file: "add-expenses" },
+        "import-expenses": { folder: "expenses", file: "import-expenses" },
+        "income-overview": { folder: "income", file: "income-overview" },
+        "import-offerings": { folder: "income", file: "import-offerings" },
+        "add-offerings": { folder: "income", file: "add-offerings" },
+        "add-cheque-deposit": { folder: "income", file: "add-cheque-deposit" },
+        "add-single-interac": { folder: "income", file: "add-single-interac" },
+        "add-multiple-interac": { folder: "income", file: "add-multiple-interac" },
+        "other-income": { folder: "income", file: "other-income" },
+        "source-list": { folder: "income", file: "source-list" },
+        "transfer-overview": { folder: "interbank-transfer", file: "transfer-overview" },
+        "add-transfer": { folder: "interbank-transfer", file: "add-transfer" },
+        "import-transfer": { folder: "interbank-transfer", file: "import-transfer" },
+        "detailed-report-overview": { folder: "detailed-report", file: "detailed-report-overview" },
+        "attendance-overview": { folder: "attendance", file: "attendance-overview" },
+        "add-attendance": { folder: "attendance", file: "add-attendance" },
+        "import-attendance": { folder: "attendance", file: "import-attendance" },
+        "gck-reports": { folder: "attendance", file: "gck-reports" },
+        "church-properties-overview": { folder: "church-properties", file: "church-properties-overview" },
+        "add-property": { folder: "church-properties", file: "add-property" },
+        "import-properties": { folder: "church-properties", file: "import-properties" },
+        "reconciliation-overview": { folder: "reconciliation", file: "reconciliation-overview" },
+        "receipts-overview": { folder: "receipts", file: "receipts-overview" },
+        "generate-tax-receipts": { folder: "receipts", file: "generate-tax-receipts" },
+        "marriage": { folder: "marriage", file: "marriage" },
+    };
+
+    function loadContent(key) {
+        const contentContainer = document.getElementById("main-content");
+
+        // Show loading state
+        contentContainer.innerHTML = "<p>Loading...</p>";
+
+        if (!contentMap[key]) {
+            contentContainer.innerHTML = `<p>Error: No mapping found for ${key}</p>`;
+            return;
+        }
+
+        const { folder, file } = contentMap[key];
+
+        // Fetch HTML file
+        fetch(`/static/help/${folder}/${file}.html`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Could not fetch content for ${key}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                contentContainer.innerHTML = html;
+            })
+            .catch(error => {
+                contentContainer.innerHTML = `<p>Error loading content: ${error.message}</p>`;
+            });
+    }
+
+    // Attach event listeners to sidebar links
+    document.querySelectorAll('.btn-toggle-nav a').forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const contentKey = this.getAttribute('data-content');
+            loadContent(contentKey);
+        });
+    });
+
+    // Load "General Overview" content on page load
+    window.onload = () => {
+        {% if request.user.role == 5 %}
+            loadContent("marriage");
+        {% else %}
+            loadContent("general-overview");
+        {% endif %}
+    };
+</script>
+
+{% endblock extra_js %}

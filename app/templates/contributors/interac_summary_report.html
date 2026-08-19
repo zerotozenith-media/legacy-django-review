@@ -1,0 +1,63 @@
+{% load static %}
+{% load custom_tags %}
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+
+    <img src="data:image/jpg;base64,{{ report_logo }}" alt="Logo" style="width: 100%; height: auto; margin: auto">
+
+    <div style="margin-top: 50px; text-align: center;">
+        <h1>Interac E-Transfer Summary Report {{ report_year }}</h1>
+
+        {% with contributor=contributor %}
+            <div style="margin-top: 20px;">
+                <h2>{{ contributor.full_name }}</h2>
+                <p>Email: {{ contributor.email }}</p>
+                <p>Address: {{ contributor.address }}</p>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <h4>Details of donations made by {{ contributor.full_name }}</h4>
+                <table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+                    <thead>
+                    <tr style="border: 1px solid #000;">
+                        <th style="border: 1px solid #000; text-align: center;">Month</th>
+                        <th style="border: 1px solid #000; text-align: center;">Day</th>
+                        <th style="border: 1px solid #000; text-align: center;">Amount</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for month, donations in contributor.donations.items %}
+                        {% if donations %}
+                            {% for donation in donations %}
+                                <tr>
+                                    {% if forloop.first %}
+                                        <td rowspan="{{ donations|length }}"
+                                            style="border: 1px solid #000; text-align: center;">{{ month }}</td>
+                                    {% endif %}
+                                    <td style="border: 1px solid #000; text-align: center;">{{ donation.formatted_date }}</td>
+                                    <td style="border: 1px solid #000; text-align: right;">${{ donation.amount }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td style="border: 1px solid #000; text-align: center;">{{ month }}</td>
+                                <td style="border: 1px solid #000;"></td>
+                                <td colspan="2" style="border: 1px solid #000; text-align: right;">$0.0</td>
+                            </tr>
+                        {% endif %}
+
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top: 20px; text-align: right;">
+                <h2>TOTAL CAD: {{ contributor.total_donation|floatformat:2 }}</h2>
+            </div>
+
+        {% endwith %}
+
+    </div>
+
+{% endblock content %}
+

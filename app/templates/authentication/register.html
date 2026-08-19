@@ -1,0 +1,86 @@
+{% extends 'layouts/base-auth.html' %}
+{% load static %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row no-gutter min-vh-100">
+            <!-- The image half -->
+            <div class="col-md-6 d-md-flex bg-light">
+                <img src="{% static 'img/dclm_logo_big.png' %}" alt="" style="width: 100%; object-fit: contain">
+            </div>
+
+            <!-- The content half -->
+            <div class="col-md-6 bg-light">
+                <div class="d-flex align-items-start align-items-md-center h-100">
+
+                    <!-- Demo content-->
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-10 col-xl-7 mx-auto">
+                                <h3 class="display-4" style="font-size: 49px;text-transform: uppercase">DCLM Canada</h3>
+                                <h5 class="display-4" style="font-size: 22px;text-transform: uppercase">Church Management System</h5>
+                                <h5 class="text-muted mb-4" >Create an account</h5>
+
+                                <form role="form" method="post" action="{% url 'register' %}">
+                                    {% csrf_token %}
+
+                                    {% include 'partials/_messages.html' %}
+
+                                    <div class="input-group mb-3">
+                                        <input type="email" name="email" placeholder="Email address" required=""
+                                               autofocus="" class="form-control border-0 shadow-sm px-4">
+                                    </div>
+
+                                    <div class="input-group mb-3">
+                                        <input type="text" name="first_name" placeholder="First Name" required=""
+                                               class="form-control border-0 shadow-sm px-4">
+                                    </div>
+
+                                    <div class="input-group mb-3">
+                                        <input type="text" name="middle_name" placeholder="Middle Name (optional)"
+                                               class="form-control border-0 shadow-sm px-4">
+                                    </div>
+
+                                    <div class="input-group mb-3">
+                                        <input type="text" name="last_name" placeholder="Last Name" required=""
+                                               class="form-control border-0 shadow-sm px-4">
+                                    </div>
+
+                                    <div class="input-group mb-3">
+                                        <input type="password" name="password" placeholder="Password" required=""
+                                               class="form-control border-0 shadow-sm px-4">
+                                    </div>
+
+                                    <button type="submit" name="register"
+                                            class="btn btn-primary btn-block text-uppercase mb-2 shadow-sm">
+                                        Register
+                                    </button>
+                                </form>
+
+                                <p class="text-muted">Already have an account? <a href="{% url 'login' %}">Login</a></p>
+                            </div>
+                        </div>
+                    </div><!-- End Demo content -->
+
+                </div>
+            </div><!-- End content half -->
+        </div>
+    </div>
+
+    <style>
+        .login,
+        .image {
+            min-height: 100vh;
+        }
+
+        .bg-image {
+            background-image: url('{% static 'img/dclm_logo_big.png' %}');
+            background-size: 70%; /* Adjust the background size */
+            background-repeat: no-repeat; /* Prevent image repetition */
+            background-position: center center;
+            background-color: #f8f9fa; /* Add a background color for better contrast */
+        }
+    </style>
+
+{% endblock content %}

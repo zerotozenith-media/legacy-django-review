@@ -1,0 +1,55 @@
+{% extends 'layouts/base.html' %}
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% load static %}
+{% block content %}
+    <div class="container mt-5">
+        {% if success_message %}
+            <div class="alert alert-success" role="alert">
+                {{ success_message }}
+            </div>
+        {% endif %}
+
+        {% if errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ errors.error }}
+            </div>
+        {% endif %}
+
+        <div class="text-center">
+            <h1>Import Bank Statement</h1>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                 <div class="form-group col-md-6 mt-5 ml-auto mr-auto">
+                    <select class="form-control mb-3" id="account_type" name="account_type" required>
+                        <option value="" disabled selected>Select Bank Account Type</option>
+                        <option value="credit_account">CREDIT ACCOUNT</option>
+                        <option value="savings_account">SAVINGS ACCOUNT</option>
+                    </select>
+                </div>
+
+                <div class="form-group col-md-6  mt-4 ml-auto mr-auto">
+                    <select class="form-control mb-3" id="region" name="region" required>
+                        <option value="" disabled selected>Select Region</option>
+                        {% for region in regions %}
+                            <option value="{{ region.id }}">{{ region.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                  <div class="row justify-content-center">
+                    <div class="col-md-8 offset-4 mt-4">
+                        <input type="file" id="fileInput" name="file" class="form-control-file" accept=".pdf" required>
+                    </div>
+                </div>
+
+                <div id="selectedFileName" class="mt-5"></div>
+
+                <div class="m-auto">
+                    <button type="submit" class="btn btn-success btn-lg">Upload</button>
+
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

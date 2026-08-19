@@ -1,0 +1,247 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+    <style>
+         #go-back-arrow {
+            display: none !important;
+          }
+
+    </style>
+{% endblock extrastyle %}
+
+{% block content %}
+    {% include 'partials/_messages.html' %}
+    {% include "includes/filter_bar.html" %}
+    <div class="row">
+        <div class="col-xl-12 col-md-6">
+            <div class="card Recent-Users">
+                <div class="card-header d-flex justify-content-between">
+                    <h5>Church Expenses</h5>
+                    <div>
+                        <a href="{% url 'add-expenses' %}" class="btn btn-primary">Add Expense</a>
+                        <a href="{% url 'expense_uploader' %}" class="btn btn-primary">Import Expense</a>
+                    </div>
+                </div>
+                <div class="card-block px-0 py-3 m-2">
+                    <div class="row">
+                        <div class="col-md-4 pull-right mb-4">
+                            <div id="reportrange"
+                                 style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                                <i class="fa fa-search"></i>&nbsp;
+                                <span></span>
+                            </div>
+                        </div>
+{#                        <div class="col-md-6 pull-right mb-4">#}
+{#                            <div class="row">#}
+{#                                <div class="col-md-2">#}
+{#                                    <label for="exampleFormControlSelect1">Category : </label>#}
+{#                                </div>#}
+{#                                <div class="col-md-8">#}
+{#                                    <select class="form-control" name="category" id="category-select-filter" style="height: 38px !important;">#}
+{#                                        <option value="">Select a category</option>#}
+{#                                        {% for category in categories %}#}
+{#                                            <option name="category"#}
+{#                                                    value="{{ category.id }}" {% if category.id == selected_category %}selected{% endif %}>{{ category.name }}</option>#}
+{#                                        {% endfor %}#}
+{#                                    </select>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="expensive_datatable">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>Local Church</th>
+                                <th>Amount (CAD)</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Tax Category</th>
+                                <th class="text-center">Actions</th>
+                                <th class="text-right"></th>
+
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for expense in expenses %}
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <h6 class="m-0">{{ expense.date }}</h6>
+                                    </td>
+                                     <td>
+                                        <h6 class="m-0">{{ expense.local_church.local_church_name.title }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ expense.amount }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ expense.category }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ expense.description }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ expense.tax_category }}</h6>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{% url 'expense-edit' expense.id %}">
+                                            <i class="fa fa-edit text-primary" title="Edit"></i>
+                                        </a>
+                                        <a href="{% url 'expense-delete' expense.id %}" id="delete_expense">
+                                            <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0 text-c-green"></h6>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--[ Recent Users ] end-->
+    </div>
+    <!-- [ Main Content ] end -->
+{% if request.user.role == 3 or request.user.role == 4 or request.user.is_staff %}
+<div class="row mt-4">
+        <div class="col-xl-12 col-md-6">
+            <div class="card Recent-Users">
+                <div class="card-header d-flex justify-content-between">
+                    <h5>Region Expenses</h5>
+                    <div>
+                        <a href="{% url 'add-region-expenses' %}" class="btn btn-primary">Add Region Expense</a>
+                    </div>
+                </div>
+                <div class="card-block px-0 py-3 m-2">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="region_expensive_datatable">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>Region</th>
+                                <th>Amount (CAD)</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Tax Category</th>
+                                <th class="text-center">Actions</th>
+                                <th class="text-right"></th>
+
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for expense in region_expenses %}
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <h6 class="m-0">{{ expense.date }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ expense.region.name }}</h6>
+                                    </td>
+                                      <td>
+                                        <h6 class="m-0">{{ expense.amount|floatformat:2  }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ expense.category }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ expense.description }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0">{{ expense.tax_category }}</h6>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{% url 'region-expense-edit' expense.id %}">
+                                            <i class="fa fa-edit text-primary" title="Edit"></i>
+                                        </a>
+                                        <a href="{% url 'region-expense-delete' expense.id %}" id="delete_region_expense">
+                                            <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <h6 class="m-0 text-c-green"></h6>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--[ Recent Users ] end-->
+    </div>
+{% endif %}
+{% endblock content %}
+
+{% block extra_js %}
+    
+    <script>
+        $(document).ready(function () {
+            var baseUrl = window.location.protocol + "//" + window.location.host;
+            dateRangeFilter('/expense');
+            $('#expensive_datatable').DataTable();
+        });
+
+        document.querySelectorAll('#delete_expense').forEach(item => {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                const deleteUrl = event.currentTarget.getAttribute('href');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You are about to delete this expense entry!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // If confirmed, redirect to the delete URL
+                        window.location.href = deleteUrl;
+                    }
+                });
+            });
+        });
+    </script>
+       <script>
+        $(document).ready(function () {
+            var baseUrl = window.location.protocol + "//" + window.location.host;
+            dateRangeFilter('/expense');
+            $('#region_expensive_datatable').DataTable();
+        });
+
+        document.querySelectorAll('#delete_region_expense').forEach(item => {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                const deleteUrl = event.currentTarget.getAttribute('href');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You are about to delete this expense entry!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // If confirmed, redirect to the delete URL
+                        window.location.href = deleteUrl;
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock extra_js %}

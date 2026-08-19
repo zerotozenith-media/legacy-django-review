@@ -1,0 +1,1417 @@
+{% extends 'layouts/base.html' %}
+{% load static dict_filters %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% block extrastyle %}
+    <style>
+        .card .card-header h5:after {
+            background-color: transparent;
+        }
+
+        tr {
+            border-bottom: 1px solid #e7eaf0;
+            border-top: none;
+        }
+
+        th {
+            font-size: medium;
+        }
+
+        .card {
+            min-height: fit-content;
+            max-height: 510px;
+            padding: 0.2rem;
+        }
+
+        #attendanceBarChart {
+            height: 100%;
+        }
+
+        #tableContainer, #chartContainer {
+            display: none;
+        }
+
+        /* Show the graph by default */
+        #chartContainer {
+            display: block;
+        }
+
+        .sticky-container {
+            position: sticky;
+            top: 0; /* Distance from the top of the viewport where it should stick */
+            background-color: #f6f6f6;
+            z-index: 1000;
+            padding: 10px; /* Optional: Add padding for better appearance */
+        }
+
+         #go-back-arrow {
+            display: none !important;
+          }
+
+    </style>
+{% endblock extrastyle %}
+{% block content %}
+    <!-- Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailModalLabel">Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-hover" id="detailTable">
+                        <thead>
+                        <tr>
+                            <th>Contributor</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <!-- Pagination Controls -->
+                    <div id="paginationControls" class="d-flex justify-content-center align-items-baseline mt-3">
+                        <button id="prevPage" class="btn btn-secondary mr-2">Previous</button>
+                        <span id="currentPage"></span>
+                        <button id="nextPage" class="btn btn-secondary ml-2">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {% include 'partials/_messages.html' %}
+    <div class="row mb-3 sticky-container">
+        <div class="col-md-12">
+            <div class="d-flex flex-wrap justify-content-end align-items-center ">
+                <form method="get" class=" d-flex flex-wrap justify-content-end flex-grow-1">
+                    <div id="reportrange" class="m-1 form-control"
+                         style="margin-right:0.5rem;background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; min-width: 150px;min-height: 44px;width:fit-content;line-height:31px">
+                        <i class="fa fa-search"></i>&nbsp;
+                        <span></span>
+                    </div>
+                    <input type="text" name="start_date" hidden>
+                    <input type="text" name="end_date" hidden>
+                    {% if request.user.role == 3 or request.user.is_staff %}
+                        <select name="region" id="region-select" class="form-control m-1"
+                                style="min-width: 150px;min-height: 44px;max-width: 287px">
+                            <option value="">All Regions</option>
+                            {% for region in region_list %}
+                                <option value="{{ region.id }}"
+                                        {% if request.GET.region|floatformat:0 == region.id|floatformat:0 %}selected{% endif %}>{{ region.name|lower }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                    {% if request.user.role == 3 or request.user.is_staff or request.user.role == 4 %}
+                        <select name="local_church" id="local_church-select" class="form-control m-1"
+                                style="min-width: 150px;max-width: 287px">
+                            <option value="">All Local Churches</option>
+                            {% for local_church in local_church_list %}
+                                <option value="{{ local_church.id }} {% if request.GET.local_church|floatformat:0 == local_church.id|floatformat:0 %}selected{% endif %}">{{ local_church.local_church_name.title|capfirst }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                    <button class="btn btn-primary ml-2">Filter</button>
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+    <div class="row">
+        <!--[ daily contributions section ] strats-->
+        <div class="col-md-6 col-xl-3">
+            <div class="card daily-sales icon-card">
+                <div class="card-block">
+                    <h6 class="mb-4 text-c-grey font-semibold">This Month's Total Other Income</h6>
+                    <div class="row d-flex align-items-center">
+                        <div class="col-9">
+                            <h5 class="f-w-300 m-b-0 text-c-primary font-semibold">
+                                CAD {{ current_month_income|floatformat:2 }}
+                            </h5>
+                        </div>
+                        <div class="col-3 p-0">
+                            <div class="icon icon-shape">
+                                <i class="bi bi-cash"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card Monthly-sales icon-card">
+                <div class="card-block">
+                    <h6 class="mb-4 text-c-grey font-semibold">This Month's Total Expense</h6>
+                    <div class="row d-flex align-items-center">
+                        <div class="col-9">
+                            <h5 class="f-w-300 m-b-0 text-c-primary font-semibold">
+                                CAD {{ current_month_expense|floatformat:2 }}
+                            </h5>
+                        </div>
+                        <div class="col-3 p-0">
+                            <div class="icon icon-shape">
+                                <i class="bi bi-wallet2"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card Monthly-sales icon-card">
+                <div class="card-block">
+                    <h6 class="mb-4 text-c-grey font-semibold">This Month's Contribution</h6>
+                    <div class="row d-flex align-items-center">
+                        <div class="col-9">
+                            <h5 class="f-w-300 m-b-0 text-c-primary font-semibold"
+                                style="font-weight: 500">{{ current_month_contributions|floatformat:"2" }}
+                            </h5>
+                        </div>
+                        <div class="col-3 p-0">
+                            <div class="icon icon-shape">
+                                <i class="bi bi-cash-stack"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card Monthly-sales icon-card">
+                <div class="card-block">
+                    <h6 class="mb-4 text-c-grey font-semibold">Total Members</h6>
+                    <div class="row d-flex align-items-center">
+                        <div class="col-9">
+                            <h5 class="f-w-300 m-b-0 text-c-primary font-semibold">
+                                {{ contributors }}
+                            </h5>
+                        </div>
+                        <div class="col-3 p-0">
+                            <div class="icon icon-shape">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card daily-sales icon-card">
+                <div class="card-block">
+                    <h6 class="mb-4 text-c-grey font-semibold">This Year's Total Other Income</h6>
+                    <div class="row d-flex align-items-center">
+                        <div class="col-9">
+                            <h5 class="f-w-300 m-b-0 text-c-primary font-semibold">
+                                CAD {{ current_year_income|floatformat:2 }}
+                            </h5>
+                        </div>
+                        <div class="col-3 p-0">
+                            <div class="icon icon-shape">
+                                <i class="bi bi-cash-coin"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!--[ daily contributions section ] end-->
+        <!--[ Monthly  contributions section ] starts-->
+        
+        <div class="col-md-6 col-xl-3">
+            <div class="card Monthly-sales icon-card">
+                <div class="card-block">
+                    <h6 class="mb-4 text-c-grey font-semibold">This Year's Total Expense</h6>
+                    <div class="row d-flex align-items-center">
+                        <div class="col-9">
+                            <h5 class="f-w-300 m-b-0 text-c-primary font-semibold">
+                                CAD {{ current_year_expense|floatformat:2 }}
+                            </h5>
+                        </div>
+                        <div class="col-3 p-0">
+                            <div class="icon icon-shape">
+                                <i class="bi bi-wallet"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--[ year  contriobutions section ] end-->
+        <!--[ Recent Activity ] start-->
+        <!--[ Recent Users ] end-->
+        <!-- [ statistics year chart ] start -->
+        
+        <div class="col-md-6 col-xl-3">
+            <div class="card Monthly-sales icon-card">
+                <div class="card-block">
+                    <h6 class="mb-4 text-c-grey font-semibold">This Year's Contribution</h6>
+                    <div class="row d-flex align-items-center">
+                        <div class="col-9">
+                            <h5 class="f-w-300 m-b-0 text-c-primary font-semibold"
+                                style="font-weight: 500">{{ current_year_contributions|floatformat:"2" }}
+                            </h5>
+                        </div>
+                        <div class="col-3 p-0">
+                            <div class="icon icon-shape">
+                                <i class="bi bi-envelope-open-heart-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card Monthly-sales icon-card">
+                <div class="card-block">
+                    <h6 class="mb-4 text-c-grey font-semibold">Total Attendance</h6>
+                    <div class="row d-flex align-items-center">
+                        <div class="col-9">
+                            <h5 class="f-w-300 m-b-0 text-c-primary font-semibold"
+                                style="font-weight: 500">{{ total_attendance_for_user_local_church|floatformat:"0" }}
+                            </h5>
+                        </div>
+                        <div class="col-3 p-0">
+                            <div class="icon icon-shape">
+                                <i class="bi bi-person-raised-hand"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row d-none">
+        <div class="col-md-12">
+            <div class="card Recent-Users">
+                <div class="card-header">
+                    <h5>Transaction Summary</h5>
+                </div>
+                <div class="card-body px-0 py-3">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <tbody>
+                            <tr>
+                                <td>Transaction Type</td>
+                                <td>Amount</td>
+                            </tr>
+                            {% for transaction in contrib_totals %}
+                                <tr class="unread" data-payment-type="{{ transaction.payment_type }}">
+                                    <td>
+                                        <h6 class="mb-1">{{ transaction.payment_type|upper }}</h6>
+                                    </td>
+                                    <td>
+                                        <h6 class="text-muted">${{ transaction.total_amount|floatformat:2 }}</h6>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            <tr class="unread" data-payment-type="miscellaneous">
+                                <td>
+                                    <h6 class="mb-1">MISCELLANEOUS</h6>
+                                </td>
+                                <td>
+                                    <h6 class="text-muted">${{ grand_total_misc|floatformat:2 }}</h6>
+                                </td>
+                            </tr>
+                            <tr class="unread">
+                                <td>
+                                    <h6 class="mb-1">TOTAL SUMMARY</h6>
+                                </td>
+                                <td>
+                                    <h6 class="text-muted">${{ overall_grand_total|floatformat:2 }}</h6>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card chart-card">
+                <div class="card-block">
+                        <div class="chart-container" style="height: 100%">
+                            <div id="attendanceDonutChart"></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="card position-relative chart-card">
+                <div class="card-block">
+                    <div class="year-filter position-absolute" style="z-index: 1; top: 1rem;right: 1rem">
+                        <label for="year-select">Select Year:</label>
+                        <select id="year-select" onchange="updateChart()">
+                            {% for year in years %}
+                                <option value="{{ year }}"
+                                        {% if year|floatformat:0 == selected_year|floatformat:0 %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div id="attendanceBarChart" width="400" height="200"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card Recent-Users chart-card">
+                <div class="card-body px-0 py-3">
+                    <div>
+                        <div id="transactionBarChart" width="400" height="200"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {#        <div class="col-md-3">#}
+        {#            <div class="card">#}
+        {#                <div class="card-block">#}
+        {#                    {% if user.role != 1 and user.role != 2 %}#}
+        {#                        <div class="chart-container" style="height: 100%">#}
+        {#                            <div id="contributionsBylocal_churchChart"></div>#}
+        {#                        </div>#}
+        {#                    {% endif %}#}
+        {#                </div>#}
+        {#            </div>#}
+        {#        </div>#}
+        <div class="col-md-6">
+            <div class="card chart-card">
+                <div class="card-block">
+                        <div class="chart-container" style="height: 100%">
+                            <div id="last_year_expense_categories"></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 {% if not request.GET.region %}col-md-12{% endif %}">
+            <div class="card chart-card ">
+                <div class="card-block p-4">
+                    <div class="d-flex justify-content-end">
+                        <a id="toggleButton" class="btn-sm btn-primary mb-1 text-white" style="cursor:pointer">Show Table</a>
+                    </div>
+                    
+                    <div class="chart-container" id="chartContainer">
+                        <div id="inc_exp_last_12_months"></div>
+                    </div>
+                    <div id="tableContainer" style="overflow-y: scroll; max-height: 450px">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th style="padding-left: 0.75rem">Month</th>
+                                    <th>Income</th>
+                                    <th>Expense</th>
+                                    <th>Profit/Loss</th>
+                                    <th>Balance</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for label, income, expense, balance in table_data %}
+                                    <tr>
+                                        <td>{{ label }}</td>
+                                        <td>{{ income }}</td>
+                                        <td>{{ expense }}</td>
+                                        <td>{{ income|floatformat:2|subtract:expense|floatformat:2 }}</td>
+                                         <td>{{ balance }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 {% if not request.GET.region %}d-none{% endif %}">
+            <div class="card chart-card">
+                <div class="card-block">
+                        <div class="chart-container">
+                            <div id="assetsAcquiredChart"></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row {% if not request.GET.region %}d-none{% endif %} d-none">
+        <div class="col-md-6">
+            <div class="card chart-card">
+                <div class="card-block">
+                        <div class="chart-container">
+                            <div id="local_churchIncomeChart"></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card chart-card">
+                <div class="card-block">
+                        <div class="chart-container">
+                            <div id="local_churchExpenseChart"></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card chart-card">
+                <div class="card-block">
+                        <div class="chart-container">
+                            <div id="categoryExpensesChart"></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 {% if not request.GET.region %}col-md-12{% endif %} d-none">
+            <div class="card chart-card">
+                <div class="card-block">
+                        <div class="chart-container">
+                            <div id="ComulativeIECombinedChart"></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Call the function to populate the local churches dropdown when the page loads
+            populateLocalChurches();
+
+
+            // Define the function to populate the local churches dropdown
+            function capitalize(s) {
+                return s && s[0].toUpperCase() + s.slice(1);
+
+            }
+
+            function populateLocalChurches() {
+                var regionId = $('#region-select').val();
+                var selectedChurchID = '{{ request.GET.local_church }}';
+                $.ajax({
+                    url: "{% url 'get_local_churches_by_region' %}",
+                    data: {
+                        'region_id': regionId
+                    },
+                    success: function (data) {
+                        var local_churches = data.local_churches;
+                        $('#local_church-select').empty();
+                        $('#local_church-select').append('<option value="">All Local Churches</option>');
+                        $.each(local_churches, function (index, local_church) {
+                            if (local_church.id == selectedChurchID) {
+                                $('#local_church-select').append('<option value="' + local_church.id + '" selected>' + local_church.name + '</option>');
+                            } else {
+                                $('#local_church-select').append('<option value="' + local_church.id + '" >' + local_church.name + '</option>');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Define the function to populate the regions dropdown
+
+
+            {#function populateRegions() {#}
+            {#    console.log("this is test")#}
+            {#    var local_churchId = $('#local_church-select').val();#}
+            {#    $.ajax({#}
+            {#        url: "{% url 'get_regions_by_local_church' %}",#}
+            {#        data: {#}
+            {#            'local_church_id': local_churchId#}
+            {#        },#}
+            {#        success: function (data) {#}
+            {#            var regions = data.regions;#}
+            {#            $('#region-select').empty();#}
+            {#            $('#region-select').append('<option value="">All Regions</option>');#}
+            {#            $.each(regions, function (index, region) {#}
+            {#                $('#region-select').append('<option value="' + region.id + '" selected>' + capitalize(region.name) + '</option>');#}
+            {#            });#}
+            {#        }#}
+            {#    });#}
+            {#}#}
+
+                // Call the function to populate the local churches dropdown when the region dropdown changes
+                $('#region-select').change(function () {
+                    console.log('region is called')
+                    populateLocalChurches();
+                });
+
+                // Call the function to populate the regions dropdown when the local church dropdown changes
+                {#$('#local_church-select').change(function () {#}
+                {#    console.log("local church is called")#}
+                {#    populateRegions();#}
+                {#});#}
+
+        });
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            $('input[name="daterange"]').daterangepicker({
+                opens: 'left'
+            }, function (start, end, label) {
+                $('input[name="start_date"]').val(start.format('YYYY-MM-DD'));
+                $('input[name="end_date"]').val(end.format('YYYY-MM-DD'));
+            });
+
+            var start = moment();
+            var end = moment();
+
+            function updateDateRangeText(start, end) {
+                $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+            }
+
+            let exten = 'dashboard';
+
+            var storedData = JSON.parse(localStorage.getItem(exten + '_dateRangeFilterData')) || {};
+            var storedStartDate = storedData.startDate;
+            var storedEndDate = storedData.endDate;
+            var expirationTimestamp = storedData.expirationTimestamp;
+
+            // Check if the data has not expired
+            if (storedStartDate && storedEndDate && expirationTimestamp && moment().isBefore(expirationTimestamp)) {
+                start = moment(storedStartDate, 'DD-MM-YYYY');
+                end = moment(storedEndDate, 'DD-MM-YYYY');
+            }
+
+            $('#reportrange').daterangepicker({
+                buttonClasses: 'btn btn-sm',
+                applyClass: 'btn-primary',
+                cancelClass: 'btn-secondary',
+                "maxSpan": {
+                    "month": 2
+                },
+                startDate: start,
+                endDate: end,
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            }, function (start, end, label) {
+                updateDateRangeText(start, end);
+                var selectedStartDate = start.format('DD-MM-YYYY');
+                var selectedEndDate = end.format('DD-MM-YYYY');
+                $('input[name="start_date"]').val(start.format('YYYY-MM-DD'));
+                $('input[name="end_date"]').val(end.format('YYYY-MM-DD'));
+                var expirationTimestamp = moment().add(1, 'hours');
+                var dataToStore = {
+                    startDate: selectedStartDate,
+                    endDate: selectedEndDate,
+                    expirationTimestamp: expirationTimestamp.format()
+                };
+                localStorage.setItem(exten + '_dateRangeFilterData', JSON.stringify(dataToStore));
+            });
+
+            updateDateRangeText(start, end);
+        });
+    </script>
+    <script>
+        function updateChart() {
+            var selectedYear = document.getElementById('year-select').value;
+            var startDate = encodeURIComponent('{{ request.GET.start_date }}'); // Encode to handle special characters
+            var endDate = encodeURIComponent('{{ request.GET.end_date }}');
+            var region = encodeURIComponent('{{ request.GET.region }}');
+            var localChurch = encodeURIComponent('{{ request.GET.local_church }}');
+
+            // Construct the new URL with query parameters
+            var newUrl = `?start_date=${startDate}&end_date=${endDate}&region=${region}&local_church=${localChurch}&year=${selectedYear}`;
+
+            // Redirect to the new URL
+            window.location.href = newUrl;
+        }
+
+    </script>
+<script>
+    var colorPalette = [
+        'rgba(24, 53, 94, 1)',   // Dark Navy Blue
+        'rgba(32, 96, 209, 1)',  // Bright Blue
+        'rgba(75, 192, 192, 1)', // Teal
+        'rgba(54, 162, 235, 1)', // Soft Blue
+        'rgba(255, 206, 86, 1)', // Yellow
+        'rgba(153, 102, 255, 1)', // Purple
+        'rgba(255, 159, 64, 1)',  // Orange
+        'rgba(255, 99, 132, 1)',  // Red
+        'rgba(102, 194, 165, 1)', // Light Green
+        'rgba(252, 141, 98, 1)',  // Coral
+        'rgba(47, 72, 88, 1)',    // Dark Slate
+        'rgba(205, 97, 51, 1)',   // Burnt Orange
+        'rgba(39, 174, 96, 1)',   // Emerald Green
+        'rgba(241, 196, 15, 1)',  // Sunflower Yellow
+        'rgba(142, 68, 173, 1)',   // Amethyst
+        'rgba(250,2,2,1)'          // Bright Red
+    ];
+    var chartColors = colorPalette.slice(0, 16);
+
+    // Calculate the profit for each month
+    var profitAmounts =
+        {{ income_amounts|safe }}.map(function (income, index) {
+            return income - {{ expense_amounts|safe }}[index];
+        });
+
+    // Calculate the balance cumulatively
+    var balanceAmounts = [];
+    var cumulativeBalance = 0;
+    {{ balances|safe }}.forEach(function (balance, index) {
+        cumulativeBalance = balance;
+        balanceAmounts.push(cumulativeBalance);
+    });
+
+    // Chart: Income, Expense, Profit/Loss, and Balance
+    var incomeExpenseData = [
+        {
+            x: {{ labels|safe }},
+            y: {{ income_amounts|safe }},
+            type: 'bar',
+            name: 'Income',
+            marker: {color: chartColors[0]},
+            text: {{ income_amounts|safe }},
+            hoverinfo: 'x+y',
+        },
+        {
+            x: {{ labels|safe }},
+            y: {{ expense_amounts|safe }},
+            type: 'bar',
+            name: 'Expense',
+            marker: {color: chartColors[15]},
+            text: {{ expense_amounts|safe }},
+            hoverinfo: 'x+y',
+        },
+        {
+            x: {{ labels|safe }},
+            y: profitAmounts,
+            type: 'scatter',  // Use 'scatter' for line plots
+            mode: 'lines+markers',
+            name: 'Profit/Loss',
+            yaxis: 'y2',  // Plot on the secondary axis
+            marker: {color: chartColors[2]},
+            line: {color: chartColors[2]},
+            text: profitAmounts,
+            hoverinfo: 'x+y',
+        },
+        {
+            x: {{ labels|safe }},
+            y: balanceAmounts,
+            type: 'bar',
+            name: 'Balance',
+            marker: {color: 'rgba(39, 174, 96, 1)'}, // Dark Green
+            text: balanceAmounts,
+            hoverinfo: 'x+y',
+        }
+    ];
+
+    var layout = {
+        title: {
+            text: 'Monthly Income, Expense, Profit/Loss, and Balance',
+            font: {
+                size: 16,
+                color: '#333',
+            },
+        },
+        subtitle: {
+            text: 'Data as of {{ current_date|date:"F j, Y" }}',
+            font: {
+                size: 16,
+                color: '#666',
+            },
+            y: 0.95,
+        },
+        xaxis: {
+            title: '',
+            tickangle: -90,
+            tickformat: '%b %y',
+            tickmode: 'array',
+            tickvals: {{ labels|safe }},
+            ticktext: {{ labels|safe }},
+            showgrid: false,
+        },
+        yaxis: {
+            title: 'Amount',
+            showgrid: false,
+        },
+        yaxis2: {
+            title: 'Profit',
+            overlaying: 'y',
+            side: 'right',
+            showgrid: false,
+            origin: false,
+            titlefont: {color: chartColors[2]},
+            tickfont: {color: chartColors[2]},
+            zeroline: false,
+        },
+        showlegend: true,
+        legend: {
+            orientation: 'h',
+            xanchor: 'center',
+            x: 0.5,
+            yanchor: 'bottom',
+            y: -0.3,
+        },
+        paper_bgcolor: 'rgba(250, 250, 250, 1)',
+        plot_bgcolor: 'rgba(250, 250, 250, 1)',
+        barmode: 'group',
+        margin: {
+            l: 50,
+            r: 50,  // Increase margin to accommodate secondary y-axis label
+            b: 10,
+            t: 50,
+            pad: 4
+        },
+        transition: {
+            duration: 500,
+            easing: 'cubic-in-out',
+        },
+    };
+
+    Plotly.newPlot('inc_exp_last_12_months', incomeExpenseData, layout);
+</script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var toggleButton = document.getElementById('toggleButton');
+            var chartContainer = document.getElementById('chartContainer');
+            var tableContainer = document.getElementById('tableContainer');
+
+            toggleButton.addEventListener('click', function () {
+                if (chartContainer.style.display === 'block') {
+                    chartContainer.style.display = 'none';
+                    tableContainer.style.display = 'block';
+                    toggleButton.textContent = 'Show Graph';
+                } else {
+                    chartContainer.style.display = 'block';
+                    tableContainer.style.display = 'none';
+                    toggleButton.textContent = 'Show Table';
+                }
+            });
+        });
+    </script>
+
+    <script>
+        // Chart 2: Expense Categories for Last Year
+        var expenseCategoriesData = [{
+            values: {{ expenses_last_year|safe }},
+            labels: {{ expense_categories|safe }},
+            type: 'pie',
+            hole: 0.4,
+            textinfo: 'label+value',
+            textfont: {size: 9},
+            marker: {
+                colors: chartColors
+            }
+        }];
+
+        var layout = {
+            title: 'Total Distribution of Expense',
+            showlegend: false,
+            legend: {
+                orientation: 'h',
+                xanchor: 'center',
+                x: 0.5,
+                yanchor: 'bottom',
+                y: -0.2, // Adjust the y-position of the legend
+                font: {
+                    size: 9,
+                },
+            },
+            paper_bgcolor: 'rgba(250, 250, 250, 1)',
+            plot_bgcolor: 'rgba(250, 250, 250, 1)',
+        };
+
+        Plotly.newPlot('last_year_expense_categories', expenseCategoriesData, layout);
+    </script>
+    <script>
+        var chartWidth = document.getElementById('attendanceDonutChart').offsetWidth;
+
+        // Calculate the number of legend items per row
+        var numItemsPerRow = Math.floor(chartWidth / 100);
+
+        // Calculate the width of each legend item
+        var itemWidth = chartWidth / numItemsPerRow;
+
+
+        var attendanceChartDataold =
+        {{ attendance_chart_data_json|safe }}
+        var attendanceChartData = {
+            values: attendanceChartDataold.values,
+            labels: attendanceChartDataold.labels,
+            type: 'pie',
+            hole: 0.4, // This makes it a donut chart
+            textinfo: 'label+value', // Shows label and percentage
+            textfont: {size: 12},
+            bgcolor: 'rgba(240, 240, 240, 1)',
+            marker: {
+                colors: chartColors
+            }
+        };
+
+        Plotly.newPlot('attendanceDonutChart', [attendanceChartData], {
+            title: 'Attendance Distribution',
+            showlegend: false,
+            legend: {
+                orientation: 'h',
+                xanchor: 'center',
+                x: 0.5,
+                yanchor: 'bottom',
+                y: -1,
+                font: {
+                    size: 9,
+                },
+            },
+            paper_bgcolor: 'rgba(250, 250, 250, 1)',
+            plot_bgcolor: 'rgba(250, 250, 250, 1)',
+        });
+    </script>
+    <script>
+        // Chart 10: Attendance bar chart
+        var months = {{ months|safe }};
+        var attendanceTotals = {{ attendance_totals|safe }};
+
+        // Filter out months where the attendance total is 0
+        var filteredMonths = [];
+        var filteredAttendanceTotals = [];
+
+        for (var i = 0; i < attendanceTotals.length; i++) {
+            if (attendanceTotals[i] !== 0) {
+                filteredMonths.push(months[i]);
+                filteredAttendanceTotals.push(attendanceTotals[i]);
+            }
+        }
+
+        var trace = {
+            x: filteredMonths,
+            y: filteredAttendanceTotals,
+            type: 'bar',
+            marker: {
+                color: chartColors[0]
+            }
+        };
+
+        var layout = {
+            title: {
+                text: 'Total Attendance',
+                font: {
+                    size: 16,
+                    color: '#333',
+                },
+            },
+            barmode: 'group',
+            paper_bgcolor: 'rgba(250, 250, 250, 1)',
+            plot_bgcolor: 'rgba(250, 250, 250, 1)',
+            xaxis: {
+                title: '',
+                tickangle: -90,
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+            },
+            yaxis: {
+                title: 'Total Attendance',
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+            },
+            showlegend: false,
+            legend: {
+                orientation: 'h',
+                xanchor: 'center',
+                x: 0.5,
+                yanchor: 'bottom',
+                y: -0.1,
+                font: {
+                    size: 7, // Adjust the font size of the legend items
+                },
+                itemsizing: 'constant', // Set the itemsizing property to 'constant' to ensure that the legend items have a consistent size
+                traceorder: 'normal', // Set the traceorder property to 'normal' to display the legend items in the same order as the traces
+                width: 1,
+                itemwidth: 4,
+            },
+            margin: {
+                l: 50,
+                r: 10,
+                b: 10,
+                t: 50,
+                pad: 4
+            },
+            transition: {
+                duration: 500,
+                easing: 'cubic-in-out',
+            },
+        };
+
+        Plotly.newPlot('attendanceBarChart', [trace], layout);
+    </script>
+
+    <script>
+        var transactionTypes = [];
+        var transactionAmounts = [];
+
+        {% for transaction in contrib_totals %}
+            transactionTypes.push("{{ transaction.payment_type|capitalize_and_contrib_type }}");
+            transactionAmounts.push({{ transaction.total_amount|floatformat:2 }});
+        {% endfor %}
+        {% if income_total %}
+            transactionTypes.push("Sales etc")
+            transactionAmounts.push({{ income_total|floatformat:2 }})
+        {% endif %}
+        {% if online_deposited %}
+            transactionTypes.push("Cheque Deposit")
+            transactionAmounts.push({{ online_deposited|floatformat:2 }})
+        {% endif %}
+        {% if direct_deposit %}
+            transactionTypes.push("Direct Transfer")
+            transactionAmounts.push({{ direct_deposit|floatformat:2 }})
+        {% endif %}
+
+        // Add Miscellaneous and Total Summary
+        transactionTypes.push("Miscellaneous");
+        transactionAmounts.push({{ grand_total_misc|floatformat:2 }});
+
+
+        var transactionTrace = {
+            x: transactionTypes,
+            y: transactionAmounts,
+            type: 'bar',
+            marker: {
+                color: chartColors
+            },
+            text: transactionAmounts, // This will show the values on top of the bars
+            textposition: 'outside', // Automatically position the text (usually at the top of the bars)
+            hoverinfo: 'y',
+        };
+
+        var transactionLayout = {
+            title: {
+                text: 'Transaction Summary',
+                font: {
+                    size: 16,
+                    color: '#333',
+                },
+            },
+            barmode: 'group',
+            paper_bgcolor: 'rgba(250, 250, 250, 1)',
+            plot_bgcolor: 'rgba(250, 250, 250, 1)',
+            xaxis: {
+                title: '',
+                tickangle: -90,
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+                font: 6,
+            },
+            yaxis: {
+                title: 'Amount',
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+                range: [0, Math.max.apply(Math, transactionAmounts) * 1.1], // Add some padding to the y-axis
+
+            },
+            showlegend: false,
+            legend: {
+                orientation: 'h',
+                xanchor: 'center',
+                x: 0.5,
+                yanchor: 'bottom',
+                y: -0.1,
+                font: {
+                    size: 7, // Adjust the font size of the legend items
+                },
+                itemsizing: 'constant', // Set the itemsizing property to 'constant' to ensure that the legend items have a consistent size
+                traceorder: 'normal', // Set the traceorder property to 'normal' to display the legend items in the same order as the traces
+                width: 1,
+                itemwidth: 4,
+            },
+            margin: {
+                l: 50,
+                r: 50,
+                b: 50,
+                t: 100,
+                pad: 4
+            },
+            transition: {
+                duration: 500,
+                easing: 'cubic-in-out',
+            },
+        };
+
+        Plotly.newPlot('transactionBarChart', [transactionTrace], transactionLayout);
+    </script>
+    <script>
+        // Chart 8: Contributions by Local Church
+        var contributionsBylocal_churchData = JSON.parse('{{ contributions_by_local_church_chart|escapejs }}');
+
+        var contributionsBylocal_churchtrace = {
+            labels: contributionsBylocal_churchData.labels,
+            values: contributionsBylocal_churchData.amounts,
+            type: 'pie',
+            hole: 0.4,  // Doughnut effect
+            textinfo: 'value+percent',  // Show value and percentage
+            textposition: 'inside',
+            marker: {
+                colors: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ]
+            },
+        };
+
+        var contributionsBylocal_churchlayout = {
+            title: 'Contributions by Local Church',
+            showlegend: true,
+            paper_bgcolor: 'rgba(250, 250, 250, 1)',
+            plot_bgcolor: 'rgba(250, 250, 250, 1)',
+            legend: {
+                orientation: 'v',
+                x: 1,
+                y: 0.5
+            }
+
+        };
+
+        Plotly.newPlot('contributionsBylocal_churchChart', [contributionsBylocal_churchtrace], contributionsBylocal_churchlayout);
+    </script>
+
+    <script>
+        const categoryExpensesChartData = {{ monthly_expense_by_category_chart_data_json|safe }};
+
+        const categoryExpensesCharttraces = categoryExpensesChartData.datasets.map((dataset, index) => ({
+            name: dataset.name,
+            x: categoryExpensesChartData.labels,
+            y: dataset.y,
+            type: 'bar',
+            marker: {
+                color: chartColors[index], // Use the background color from the dataset
+            },
+            text: dataset.y, // Add data labels to the bars
+            hoverinfo: 'x+y', // Enable interactivity
+        }));
+
+
+        const categoryExpensesChartlayout = {
+            title: {
+                text: 'Monthly Expenses by Category',
+                font: {
+                    size: 16,
+                    color: '#333',
+                },
+            },
+            barmode: 'stack',
+            paper_bgcolor: 'rgba(250, 250, 250, 1)',
+            plot_bgcolor: 'rgba(250, 250, 250, 1)',
+            xaxis: {
+                title: '',
+                tickangle: -90,
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+            },
+            yaxis: {
+                title: 'Total Amount',
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+            },
+            showlegend: true,
+            legend: {
+                orientation: 'h',
+                xanchor: 'center',
+                x: 0.5,
+                yanchor: 'bottom',
+                y: -0.8,
+                font: {
+                    size: 7, // Adjust the font size of the legend items
+                },
+                itemsizing: 'constant', // Set the itemsizing property to 'constant' to ensure that the legend items have a consistent size
+                traceorder: 'normal', // Set the traceorder property to 'normal' to display the legend items in the same order as the traces
+                width: 1,
+                itemwidth: 4,
+            },
+            margin: {
+                l: 50,
+                r: 10,
+                b: 10,
+                t: 50,
+                pad: 4
+            },
+            transition: {
+                duration: 500,
+                easing: 'cubic-in-out',
+            },
+        };
+
+        Plotly.newPlot('categoryExpensesChart', categoryExpensesCharttraces, categoryExpensesChartlayout);
+    </script>
+    <script>
+        // Assuming `incoming_amount_local_church_chart_data_json` is passed from the Django view
+        const local_churchIncomechartData = {{ incoming_amount_local_church_chart_data_json|safe }};
+
+        // Extract the traces and layout
+        const local_churchIncomedata = local_churchIncomechartData.traces.map((trace, index) => ({
+            ...trace, // Spread the existing trace properties
+            marker: {
+                color: colorPalette[index % colorPalette.length] // Apply colors from the palette cyclically
+            }
+        }));
+
+        var local_churchIncomelayout = {
+            title: {
+                text: 'Income by Local Church',
+                font: {
+                    size: 16,
+                    color: '#333',
+                },
+            },
+            barmode: 'group',
+            paper_bgcolor: 'rgba(250, 250, 250, 1)',
+            plot_bgcolor: 'rgba(250, 250, 250, 1)',
+            xaxis: {
+                title: '',
+                tickangle: -90,
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+            },
+            yaxis: {
+                title: 'Total Amount',
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+            },
+            showlegend: true,
+            legend: {
+                orientation: 'h',
+                xanchor: 'center',
+                x: 0.5,
+                yanchor: 'bottom',
+                y: -0.3,
+                font: {
+                    size: 7, // Adjust the font size of the legend items
+                },
+                itemsizing: 'constant', // Set the itemsizing property to 'constant' to ensure that the legend items have a consistent size
+                traceorder: 'normal', // Set the traceorder property to 'normal' to display the legend items in the same order as the traces
+                width: 1,
+                itemwidth: 4,
+            },
+            margin: {
+                l: 50,
+                r: 10,
+                b: 10,
+                t: 50,
+                pad: 4
+            },
+            transition: {
+                duration: 500,
+                easing: 'cubic-in-out',
+            },
+        };
+
+        // Render the bar chart with Plotly
+        Plotly.newPlot('local_churchIncomeChart', local_churchIncomedata, local_churchIncomelayout);
+
+    </script>
+    <script>
+        // Correctly parse the JSON data from Django to JavaScript
+        const local_churchExpensechartData = JSON.parse('{{ expense_amount_local_church_chart_data_json|escapejs }}');
+
+        // Extract the traces and layout
+        const local_churchExpensedata = local_churchExpensechartData.traces.map((trace, index) => ({
+            ...trace,
+            marker: {
+                color: colorPalette[index % colorPalette.length], // Cycle through the color palette
+            }
+        }));
+        const local_churchExpenselayout = {
+            title: {
+                text: 'Expense by Local Church',
+                font: {
+                    size: 16,
+                    color: '#333',
+                },
+            },
+            barmode: 'group',
+            paper_bgcolor: 'rgba(250, 250, 250, 1)',
+            plot_bgcolor: 'rgba(250, 250, 250, 1)',
+            xaxis: {
+                title: '',
+                tickangle: -90,
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+            },
+            yaxis: {
+                title: 'Total Amount',
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+            },
+            showlegend: true,
+            legend: {
+                orientation: 'h',
+                xanchor: 'center',
+                x: 0.5,
+                yanchor: 'bottom',
+                y: -0.3,
+                font: {
+                    size: 7, // Adjust the font size of the legend items
+                },
+                itemsizing: 'constant', // Set the itemsizing property to 'constant' to ensure that the legend items have a consistent size
+                traceorder: 'normal', // Set the traceorder property to 'normal' to display the legend items in the same order as the traces
+                width: 1,
+                itemwidth: 4,
+            },
+            margin: {
+                l: 50,
+                r: 10,
+                b: 10,
+                t: 50,
+                pad: 4
+            },
+            transition: {
+                duration: 500,
+                easing: 'cubic-in-out',
+            },
+        };
+
+        // Render the bar chart with Plotly
+        Plotly.newPlot('local_churchExpenseChart', local_churchExpensedata, local_churchExpenselayout);
+    </script>
+    <script>
+        // Parse the JSON data from Django into a JavaScript object
+        const propertiesChartData = JSON.parse('{{ properties_chart_data_json|escapejs }}');
+
+        // Extract the traces and layout
+        const propertiesData = propertiesChartData.traces.map((trace, index) => ({
+            ...trace,
+            marker: {
+                color: colorPalette[index % colorPalette.length], // Cycle through the color palette
+            }
+        }));
+
+        const propertiesLayout = {
+            title: {
+                text: 'Assets Acquired by Year',
+                font: {
+                    size: 16,
+                    color: '#333',
+                },
+            },
+            barmode: 'group',
+            paper_bgcolor: 'rgba(250, 250, 250, 1)',
+            plot_bgcolor: 'rgba(250, 250, 250, 1)',
+            xaxis: {
+                title: '',
+                tickangle: -90,
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+                dtick: 1, // Ensure x-axis ticks are integers (1-year intervals)
+                tickformat: 'd', // Format the ticks as integers
+            },
+            yaxis: {
+                title: 'Total Amount',
+                automargin: true,
+                showgrid: false, // Hide the grid lines
+            },
+            showlegend: true,
+            legend: {
+                orientation: 'h',
+                xanchor: 'center',
+                x: 0.5,
+                yanchor: 'bottom',
+                y: -0.3,
+                font: {
+                    size: 7, // Adjust the font size of the legend items
+                },
+                itemsizing: 'constant', // Set the itemsizing property to 'constant' to ensure that the legend items have a consistent size
+                traceorder: 'normal', // Set the traceorder property to 'normal' to display the legend items in the same order as the traces
+                width: 1,
+                itemwidth: 4,
+            },
+            margin: {
+                l: 50,
+                r: 10,
+                b: 10,
+                t: 50,
+                pad: 4
+            },
+            transition: {
+                duration: 500,
+                easing: 'cubic-in-out',
+            },
+        };
+
+        // Render the bar chart with Plotly
+        Plotly.newPlot('assetsAcquiredChart', propertiesData, propertiesLayout);
+    </script>
+
+    <script>
+        const cumulativeIEChartData = JSON.parse('{{ cumulative_ie_chart_data_json|escapejs }}');
+
+        const cumulativeIEData = cumulativeIEChartData.traces.map((trace) => ({
+            ...trace,
+            marker: {
+                color: trace.y.map(y => y >= 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
+            }
+        }));
+
+        const cumulativeIELayout = {
+            title: {
+                text: 'Cumulative Income vs Expenses',
+                font: {
+                    size: 16,
+                    color: '#333',
+                },
+            },
+            paper_bgcolor: 'rgba(250, 250, 250, 1)',
+            plot_bgcolor: 'rgba(250, 250, 250, 1)',
+            barmode: 'relative',
+            xaxis: {
+                title: '',
+                tickangle: -90,
+                automargin: true,
+                showgrid: false,
+            },
+            yaxis: {
+                title: 'Amount',
+                automargin: true,
+                showgrid: false,
+            },
+            showlegend: true,
+            legend: {
+                orientation: 'h',
+                xanchor: 'center',
+                x: 0.5,
+                yanchor: 'bottom',
+                y: -0.3,
+                font: {
+                    size: 7,
+                },
+                itemsizing: 'constant',
+                traceorder: 'normal',
+                width: 1,
+                itemwidth: 4,
+            },
+            margin: {
+                l: 50,
+                r: 10,
+                b: 10,
+                t: 50,
+                pad: 4
+            },
+            transition: {
+                duration: 500,
+                easing: 'cubic-in-out',
+            },
+        };
+
+        Plotly.newPlot('ComulativeIECombinedChart', cumulativeIEData, cumulativeIELayout);
+    </script>
+
+{% endblock content %}

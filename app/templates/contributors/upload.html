@@ -1,0 +1,52 @@
+{% extends 'layouts/base.html' %}
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% load static %}
+{% block content %}
+    <div class="container mt-5">
+        {% if success_message %}
+            <div class="alert alert-success" role="alert">
+                {{ success_message }}
+            </div>
+        {% endif %}
+
+        {% if errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ errors.error }}
+            </div>
+        {% endif %}
+
+        <div class="text-center">
+            {% if type == 'offerings_usd' %}
+                <h2 class="mb-4">Upload Offerings - USD Transactions</h2>
+            {% elif type == 'offerings_can' %}
+                <h2 class="mb-4">Upload Offerings - CAD Transactions</h2>
+            {% else %}
+                <h2 class="mb-4">Upload Interac E-Transfer Transactions</h2>
+            {% endif %}
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-8 offset-4 mt-5">
+                        <input type="file" id="fileInput" name="file" class="form-control-file" accept=".xlsx" required>
+                    </div>
+                </div>
+
+                <div id="selectedFileName" class="mt-5"></div>
+                <div class="form-group col-md-6 m-auto">
+                    <select class="form-control mb-3" id="local_church" name="local_church" required>
+                        <option value="">Select local church</option>
+                        {% for church in local_churches %}
+                            <option value="{{ church.id }}" {% if church in request.user.pastor_churches.all %}selected{% endif %}>{{ church.local_church_name.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mr-5">
+                    <button type="submit" class="btn btn-success btn-lg">Upload</button>
+                    <a href="{% url 'download_interac_sample' type %}" class="btn btn-primary btn-lg">Download Sample
+                        XLSX</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

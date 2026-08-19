@@ -1,0 +1,311 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% load static dict_filters %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+<style>
+         #go-back-arrow {
+            display: none !important;
+          }
+
+         .bg-total {
+        background-color: #cfd6e3 !important
+        }
+
+        .bg-total-region {
+        background-color: #75a9fa !important
+        }
+
+         .bg-gray {
+        background-color: #f5fbff !important
+        }
+
+        .bg-details {
+        background-color: #a7c7fa !important
+        }
+
+        .bg-attendance {
+            background-color: #b7bec9 !important
+        }
+
+        .bg-remarks {
+            background-color: #cfd6e3 !important
+        }
+
+        .bg-audience {
+            background-color: #8996ab !important
+        }
+
+      .btn-group .btn {
+        border-radius: 0.5rem;
+        margin: 0 5px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .btn-group .btn:hover {
+        background-color: #0056b3;
+        color: #fff;
+    }
+
+    .dropdown-menu {
+        border-radius: 0.5rem;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown-item:hover {
+        background-color: #e9ecef;
+    }
+
+</style>
+{% endblock extrastyle %}
+
+
+{% block content %}
+{% include 'attendance/tabs.html' %}
+
+{% include 'partials/_messages.html' %}
+<div class="row">
+    <div class="container col-xl-12">
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">GCK Attendance List</h5>
+                <a href="{% url 'gck_attendance_add' %}" class="btn btn-primary">Add GCK Attendance</a>
+            </div>
+            <div class="card-body align-items-center">
+                <form method="GET" action=".">
+                    <div class="row mb-4 align-items-center">
+                        <!-- Region Selection -->
+                        <div class="col-md-3 mt-2">
+                            {% if request.user.role == 3 or request.user.is_staff %}
+                                <label for="region" class="form-label fw-bold">Select Region</label>
+                                <select name="region" id="region" class="form-control" onchange="this.form.submit()">
+                                    <option value="">All Regions</option>
+                                    {% for region in region_list %}
+                                    <option value="{{ region.name }}" {% if region.name == selected_region %}selected{% endif %}>
+                                        {{ region.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <label for="region" class="form-label fw-bold">Region</label>
+                                <input type="text" name="region" id="region" class="form-control" value="{{ user.local_church.region.name }}" readonly>
+                            {% endif %}
+                        </div>
+
+                        <!-- Month Selection -->
+                        <div class="col-md-3 mt-2">
+                            <label for="event" class="form-label fw-bold">Select GCK Event</label>
+                            <select name="event" id="event" class="form-control" onchange="this.form.submit()">
+                                {% for ev in events %}
+                                    <option value="{{ ev.id }}" {% if ev.id == selected_event_id %}selected{% endif %}>
+                                        {{ ev.name }} ({{ ev.year_month|date:"F Y" }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        {% if request.user.role == 3 or request.user.is_staff %}
+                            <div class="col-md-3 mt-2">
+                                <label for="year" class="form-label fw-bold">Select Year</label>
+                                <select name="year" id="year" class="form-select me-2" onchange="this.form.submit()">
+                                {% for year in years %}
+                                  <option value="{{ year }}" {% if year|stringformat:"s" == selected_year|stringformat:"s" %}selected{% endif %}>
+                                    {{ year }}
+                                  </option>
+                                {% endfor %}
+                              </select>
+                            </div>
+
+                            <div class="col-md-3 mt-5">
+                                <div class="btn-group">
+                                    <button type="submit" name="download" value="1" class="btn btn-secondary">Download CSV</button>
+                                    <button type="submit" name="download" value="2" class="btn btn-primary">Download PDF</button>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </form>
+
+                <div class="table-responsive mt-4">
+                   <h2 class="mb-1 text-center font-weight-bold">{{ event_name }}</h2>
+
+                    <table class="table table-hover shadow-sm" id="gck_att_datatable">
+                        <thead>
+                        <tr class="bg-secondary text-white">
+                            <th class="text-center bg-details" colspan="3">Details</th>
+                            <th class="text-center bg-attendance" colspan="6">Physical Attendance</th>
+                            <th class="text-center bg-remarks" colspan="1">Remarks</th>
+                            <th class="text-center bg-details" colspan="3">Virtual Audience</th>
+                            <th class="text-center bg-attendance" colspan="3">Facebook</th>
+                            <th class="text-center bg-audience" colspan="2">Instagram</th>
+                            <th class="text-center bg-details" colspan="1">Converts</th>
+                            <th class="text-center bg-remarks" colspan="1">Actions</th>
+                        </tr>
+                        <tr class="bg-light">
+                            <!-- Subcolumns under Details -->
+                            <th class="text-center">Location</th>
+                            <th class="text-center">Day</th>
+                            <th class="text-center">Date</th>
+                            <!-- Subcolumns under Physical Attendance -->
+                            <th class="text-center">Adult</th>
+                            <th class="text-center">Young Prof</th>
+                            <th class="text-center">Campus</th>
+                            <th class="text-center">Youths</th>
+                            <th class="text-center">Children</th>
+                            <th class="text-center">Total</th>
+                            <!-- Subcolumns under Remarks -->
+                            <th class="text-center">Remarks</th>
+                            <!-- Subcolumns under Virtual Audience -->
+                            <th class="text-center">Zoom</th>
+                            <th class="text-center">YouTube</th>
+                            <th class="text-center">Total</th>
+                            <!-- Subcolumns under Facebook -->
+                            <th class="text-center">Reached</th>
+                            <th class="text-center">Likes</th>
+                            <th class="text-center">Comments</th>
+                            <!-- Subcolumns under Instagram -->
+                            <th class="text-center">Reached</th>
+                            <th class="text-center">Engagement</th>
+                            <!-- Subcolumns under Converts -->
+                            <th class="text-center">Converts</th>
+                            <!-- Subcolumns under Actions -->
+                            <th class="text-center">Edit/Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Region Header -->
+                        {% for region in data %}
+                        <tr class="text-dark fw-bold">
+                            <td colspan="1" class="bg-details text-start">{{ region.name }}</td>
+                        </tr>
+                        <!-- Local Church Row Spanning -->
+                        {% for church in region.churches %}
+                        {% if church.days %}
+                        <tr>
+                            <td rowspan="{{ church.days|length|add:1}}" class="bg-gray text-start align-middle">{{church.name}}</td>
+                            {% for day in church.days %}
+                                <tr>
+                                    <td class="text-center">{{ day.day }}</td>
+                                    <td class="text-center">{{ day.date }}</td>
+                                    <td class="text-center">{{ day.adult }}</td>
+                                    <td class="text-center">{{ day.young_prf }}</td>
+                                    <td class="text-center">{{ day.campus }}</td>
+                                    <td class="text-center">{{ day.youths }}</td>
+                                    <td class="text-center">{{ day.children }}</td>
+                                    <td class="text-center">
+                                        {{ day.adult|add:day.young_prf|add:day.campus|add:day.youths|add:day.children|floatformat:0 }}
+                                    </td>
+                                    <td class="text-center">{{ day.remarks }}</td>
+                                    <td class="text-center">{{ day.zoom }}</td>
+                                    <td class="text-center">{{ day.youtube }}</td>
+                                    <td class="text-center">{{ day.zoom|add:day.youtube|floatformat:0 }}</td>
+                                    <td class="text-center">{{ day.fb_reached }}</td>
+                                    <td class="text-center">{{ day.fb_likes }}</td>
+                                    <td class="text-center">{{ day.fb_comments }}</td>
+                                    <td class="text-center">{{ day.ig_reached }}</td>
+                                    <td class="text-center">{{ day.ig_engagement }}</td>
+                                    <td class="text-center">{{ day.converts }}</td>
+                                    <td class="text-center">
+                                        <a href="{% url 'edit_gck_attendance' day.id %}">
+                                            <i class="fa fa-edit text-primary" title="Edit"></i>
+                                        </a>
+                                        <a href="{% url 'delete_gck_attendance' day.id %}" id="delete_attendance">
+                                            <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td class="bg-gray text-start align-middle">{{church.name}}</td>
+
+                                <td colspan="19" class="text-start">No records for the selected month</td>
+
+                        {% endif %}
+                        <tr class="bg-total text-white fw-bold">
+                            <td class="bg-total">{{ church.name }} Total</td>
+                            <td class="bg-total text-center">-</td>
+                            <td class="bg-total text-center">-</td>
+                            <td class="bg-total text-center">{{ church.total.adult }}</td>
+                            <td class="bg-total text-center">{{ church.total.young_prf }}</td>
+                            <td class="bg-total text-center">{{ church.total.campus }}</td>
+                            <td class="bg-total text-center">{{ church.total.youths }}</td>
+                            <td class="bg-total text-center">{{ church.total.children }}</td>
+                            <td class="bg-total text-center">{{ church.total.adult|add:church.total.young_prf|add:church.total.campus|add:church.total.youths|add:church.total.children|floatformat:0 }}</td>
+                            <td class="bg-total text-center">-</td>
+                            <td class="bg-total text-center">{{ church.total.zoom }}</td>
+                            <td class="bg-total text-center">{{ church.total.youtube }}</td>
+                            <td class="bg-total text-center">{{ church.total.zoom|add:church.total.youtube|floatformat:0 }}</td>
+                            <td class="bg-total text-center">{{ church.total.fb_reached }}</td>
+                            <td class="bg-total text-center">{{ church.total.fb_likes }}</td>
+                            <td class="bg-total text-center">{{ church.total.fb_comments }}</td>
+                            <td class="bg-total text-center">{{ church.total.ig_reached }}</td>
+                            <td class="bg-total text-center">{{ church.total.ig_engagement }}</td>
+                            <td class="bg-total text-center">{{ church.total.converts }}</td>
+                            <td class="bg-total text-center"></td>
+                        </tr>
+                        {% endfor %}
+
+                         {% if request.user.role != 2 %}
+                        <!-- Region 1 Total -->
+                        <tr class="bg-total text-white fw-bold">
+                            <td class="bg-total-region">{{ region.name }} Total</td>
+                            <td class="bg-total-region text-center">-</td>
+                            <td class="bg-total-region text-center">-</td>
+                            <td class="bg-total-region text-center">{{ region.total.adult }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.young_prf }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.campus }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.youths }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.children }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.adult|add:region.total.young_prf|add:region.total.campus|add:region.total.youths|add:region.total.children|floatformat:0 }}</td>
+                            <td class="bg-total-region text-center">-</td>
+                            <td class="bg-total-region text-center">{{ region.total.zoom }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.youtube }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.zoom|add:region.total.youtube|floatformat:0 }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.fb_reached }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.fb_likes }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.fb_comments }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.ig_reached }}</td>
+                            <td class="bg-total-region text-center">{{ region.total.ig_engagement }}</td>
+                             <td class="bg-total-region text-center">{{ region.total.converts }}</td>
+                            <td class="bg-total-region text-center"></td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#gck_att_datatable').DataTable();
+    });
+
+    document.querySelectorAll('#delete_attendance').forEach(item => {
+        item.addEventListener('click', event => {
+            event.preventDefault();
+            const deleteUrl = event.currentTarget.getAttribute('href');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'You are about to delete this GCK attendance entry!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // If confirmed, redirect to the delete URL
+                    window.location.href = deleteUrl;
+                }
+            });
+        });
+    });
+</script>
+{% endblock content %}

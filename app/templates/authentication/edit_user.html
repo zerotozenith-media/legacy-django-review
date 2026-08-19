@@ -1,0 +1,122 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Update User Details</h5>
+                </div>
+                <div class="card-body">
+                    <h5>Edit User</h5>
+                    <hr>
+                    <form action="{% url 'user_edit' user.id %}" method="post">
+                        {% include 'partials/_messages.html' %}
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="local_church">Church</label>
+                                <select class="form-control" name="local_church" required>
+                                     {% if request.user.role != 2  %}
+                                         <option value="">Select Church</option>
+                                        {% endif %}
+                                     {% for church in local_churches %}
+                                        <option value="{{ church.id }}"
+                                                {% if church.id == user.local_church_id %}selected{% endif %}>
+                                            {{ church.local_church_name.title }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="role">Role</label>
+                                <select class="form-control" id="role" name="role" required>
+                                    <option value="1" {% if user.role == 1 %}selected{% endif %}>Member</option>
+                                     <option value="6" {% if user.role == 6 %}selected{% endif %}>Donor</option>
+                                      <option value="5" {% if user.role == 5 %}selected{% endif %}>Marriage Committee</option>
+                                    {% if request.user.role == 4 or request.user.role == 3 or request.user.is_staff %}
+                                        <option value="2" {% if user.role == 2 %}selected{% endif %}>Local Church Pastor</option>
+                                    {% endif %}
+                                    {% if request.user.role == 3 or request.user.is_staff %}
+                                        <option value="3" {% if user.role == 3 %}selected{% endif %}>National Overseer</option>
+                                        <option value="4" {% if user.role == 4 %}selected{% endif %}>Region Overseer</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="first_name">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name"
+                                       placeholder="First Name" required value="{{ user.first_name }}">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="middle_name">Middle Name</label>
+                                <input type="text" class="form-control" id="middle_name" name="middle_name"
+                                       placeholder="Middle Name" value="{{ user.middle_name }}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="last_name">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name"
+                                       placeholder="Last Name" required value="{{ user.last_name }}">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="full_name">Full Name</label>
+                                <input type="text" class="form-control" id="full_name" name="full_name"
+                                       placeholder="Full Name" readonly value="{{ user.full_name }}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="email">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" placeholder="Email" required readonly>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="address">Address</label>
+                                <input type="text" class="form-control" id="address" name="address"
+                                       placeholder="Address" value="{{ user.address }}" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+    <script>
+        // Get references to the input fields
+        var firstNameInput = document.getElementById('first_name');
+        var middleNameInput = document.getElementById('middle_name');
+        var lastNameInput = document.getElementById('last_name');
+        var fullNameInput = document.getElementById('full_name');
+
+        // Add event listeners to listen for changes in the input fields
+        firstNameInput.addEventListener('input', updateFullName);
+        middleNameInput.addEventListener('input', updateFullName);
+        lastNameInput.addEventListener('input', updateFullName);
+
+        // Function to update the Full Name field
+        function updateFullName() {
+            // Get the values of the first name, middle name, and last name
+            var firstName = firstNameInput.value.trim();
+            var middleName = middleNameInput.value.trim();
+            var lastName = lastNameInput.value.trim();
+
+            // Concatenate the first name, middle name, and last name with spaces
+            var fullName = firstName + ' ' + middleName + ' ' + lastName;
+
+            // Update the value of the Full Name field
+            fullNameInput.value = fullName.trim();
+        }
+    </script>
+
+{% endblock extra_js %}
+

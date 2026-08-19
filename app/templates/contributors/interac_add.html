@@ -1,0 +1,240 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+    <!-- Modal -->
+    <div class="modal fade" id="selectChurchModal" tabindex="-1" role="dialog" aria-labelledby="selectChurchModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="selectChurchModalLabel">Select Local Church</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Please select a local church before entering a donor name.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="userNotFoundModal" tabindex="-1" role="dialog" aria-labelledby="userNotFoundModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userNotFoundModalLabel">User Not Found</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Unable to locate the donor in the database. Do you have the donor's email? If yes, please add them as a member. Otherwise, proceed to add them as a Non-member.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="proceed-btn">Proceed</button>
+                    <a class="btn btn-primary text-decoration-none" href="/authentication/users/">Add User</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Bank Donation</h5>
+                </div>
+                <div class="card-body">
+                    <h5>Add New Donation</h5>
+                    <hr>
+                    <form id="donation-form" action="{% url 'add-interac' %}" method="post">
+                        {% include 'partials/_messages.html' %}
+                        {% csrf_token %}
+
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="donor">Payment Type</label>
+                                <select class="form-control" id="payment_type" name="payment_type" required>
+                                    <option value="">Select Payment Type</option>
+                                    <option value="direct_transfer">Direct Transfer</option>
+                                    <option value="cheque_deposit">Cheque Deposit</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="donor">Local Churches</label>
+                                <select class="form-control" id="local_church" name="local_church" required>
+                                    <option value="">Select local church</option>
+                                    {% for church in local_churches %}
+                                        <option value="{{ church.id }}" {% if church in request.user.pastor_churches.all %}selected{% endif %}>{{ church.local_church_name.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="">Date</label>
+                                <input type="date" class="form-control" name="date" id="donation_date" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="donor_name">Received From</label>
+                                <input type="text" class="form-control" id="donor_name" name="name" placeholder="Name"
+                                       autocomplete="off" required>
+                                <ul id="donor-suggestions" class="list-group"></ul>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="">Amount</label>
+                                <input type="number" class="form-control" name="amount" placeholder="Amount" min="0" step="0.01" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-md-4 mt-1 mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input p-2" type="checkbox" role="switch"
+                                   id="special_contribution"
+                                   name="special_contribution">
+                            <label class="form-check-label" for="special_contribution">Special
+                                Contribution</label>
+                        </div>
+                    </div>
+
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+    <script>
+        var today = new Date().toISOString().split('T')[0];
+
+        document.getElementById('donation_date').value = today;
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const donorInput = document.getElementById('donor_name');
+            const suggestionsBox = document.getElementById('donor-suggestions');
+            const localChurchSelect = document.getElementById('local_church');
+            donorInput.addEventListener('keyup', function () {
+                let query = donorInput.value;
+                let selectedChurch = localChurchSelect.value;
+                
+                if (query.length > 1) {
+                    fetch(`/contributor/search-donor-names/?term=${query}&church=${selectedChurch}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Clear any existing suggestions
+                            suggestionsBox.innerHTML = '';
+
+                            if (data.length > 0) {
+                                data.forEach(function (name) {
+                                    let suggestionItem = document.createElement('li');
+                                    suggestionItem.classList.add('list-group-item', 'list-group-item-action');
+                                    suggestionItem.innerText = name;
+
+                                    // Add click event to select the name
+                                    suggestionItem.addEventListener('click', function () {
+                                        donorInput.value = name;  // Set the input value to the selected name
+                                        suggestionsBox.innerHTML = '';  // Clear suggestions
+                                    });
+
+                                    suggestionsBox.appendChild(suggestionItem);
+                                });
+                            } else {
+                                suggestionsBox.innerHTML = '<li class="list-group-item">No matches found.</li>';
+                            }
+                        });
+                } else {
+                    suggestionsBox.innerHTML = '';  // Clear suggestions if input is too short
+                }
+            });
+
+            // Hide suggestions if clicking outside of input
+            document.addEventListener('click', function (e) {
+                if (!donorInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                    suggestionsBox.innerHTML = '';  // Clear suggestions
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const donorNameInput = document.getElementById('donor_name');
+            const localChurchSelect = document.getElementById('local_church');
+            const donationForm = document.getElementById('donation-form');
+            const proceedButton = document.getElementById('proceed-btn');
+
+            // When the user starts typing the donor name
+            donorNameInput.addEventListener('input', function () {
+                let selectedChurch = localChurchSelect.value;
+
+                // Check if the local church is selected
+                if (!selectedChurch) {
+                    // Show modal to ask the user to select a church
+                    $('#selectChurchModal').modal('show');
+                    // Clear the donor name input field
+                    donorNameInput.value = '';
+                }
+            });
+
+            // When the form is submitted
+            donationForm.addEventListener('submit', function (e) {
+                e.preventDefault();  // Prevent the form from submitting immediately
+
+                let donorName = donorNameInput.value;
+                let selectedChurch = localChurchSelect.value;
+
+                if (!selectedChurch) {
+                    // Show modal if no church is selected
+                    $('#selectChurchModal').modal('show');
+                    return;
+                }
+
+                if (donorName) {
+                    // Make AJAX request to check if donor exists
+                    console.log(selectedChurch)
+                    fetch(`/contributor/search-donor-names/?term=${donorName}&church=${selectedChurch}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.includes(donorName)) {
+                                // Show modal if the donor is not found
+                                $('#userNotFoundModal').modal('show');
+                            } else {
+                                // If donor exists, submit the form
+                                donationForm.submit();
+                            }
+                        });
+                }
+            });
+
+            // Handle the proceed button in the modal
+            proceedButton.addEventListener('click', function () {
+                $('#userNotFoundModal').modal('hide');
+                donationForm.submit();  // Submit the form when the user clicks 'Proceed'
+            });
+        });
+    </script>
+
+
+
+{% endblock extra_js %}

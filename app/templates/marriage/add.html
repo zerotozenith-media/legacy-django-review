@@ -1,0 +1,173 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Marriage Record</h5>
+            </div>
+            <div class="card-body">
+                <h5>Add Marriage Record</h5>
+                <hr>
+                <form action="{% url 'add_marriage_record' %}" method="post">
+                    {% include 'partials/_messages.html' %}
+                    {% csrf_token %}
+
+                    <!-- Brother's Details Section -->
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <h5>Brother's Details</h5>
+                            <div class="form-group">
+                                <label for="{{ form.brother_name.id_for_label }}">Brother's Name</label>
+                                {{ form.brother_name }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.brother_local_church.id_for_label }}">Brother's Local Church</label>
+                                {{ form.brother_local_church }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.brother_country.id_for_label }}">Brother's Country</label>
+                                {{ form.brother_country }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.brother_province_state.id_for_label }}">Brother's Province/State</label>
+                                {{ form.brother_province_state }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.brother_medical_tests_submitted.id_for_label }}">Brother's Medical Tests Submitted</label>
+                                {{ form.brother_medical_tests_submitted }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.brother_medical_tests_reviewed.id_for_label }}">Brother's Medical Tests Reviewed</label>
+                                {{ form.brother_medical_tests_reviewed }}
+                            </div>
+                        </div>
+
+                        <!-- Sister's Details Section -->
+                        <div class="col-md-6 col-sm-12">
+                            <h5>Sister's Details</h5>
+                            <div class="form-group">
+                                <label for="{{ form.sister_name.id_for_label }}">Sister's Name</label>
+                                {{ form.sister_name }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.sister_local_church.id_for_label }}">Sister's Local Church</label>
+                                {{ form.sister_local_church }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.sister_country.id_for_label }}">Sister's Country</label>
+                                {{ form.sister_country }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.sister_province_state.id_for_label }}">Sister's Province/State</label>
+                                {{ form.sister_province_state }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.sister_medical_tests_submitted.id_for_label }}">Sister's Medical Tests Submitted</label>
+                                {{ form.sister_medical_tests_submitted }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.sister_medical_tests_reviewed.id_for_label }}">Sister's Medical Tests Reviewed</label>
+                                {{ form.sister_medical_tests_reviewed }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group w-100">
+                        <label for="{{ form.remarks.id_for_label }}">Remarks</label>
+                        {{ form.remarks }}
+                    </div>
+                     <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const countrySelect = document.getElementById('brother-country');
+    const provinceSelect = document.getElementById('brother-province-state');
+
+    // Initially disable the province state dropdown
+    provinceSelect.disabled = true;
+
+    countrySelect.addEventListener('change', function() {
+        const countryId = countrySelect.value;
+
+        // Clear existing options
+        provinceSelect.innerHTML = '<option value="">Select a province/state</option>';
+
+        if (countryId) {
+            // Enable the province state dropdown after country is selected
+            provinceSelect.disabled = false;
+
+            // Fetch regions for the selected country
+            fetch("{% url 'get_regions' %}?country_id=" + countryId)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate the provinces
+                    data.forEach(region => {
+                        const option = document.createElement('option');
+                        option.value = region.id;
+                        option.textContent = region.name;
+                        provinceSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching regions:', error));
+        } else {
+            // If no country is selected, disable the province state dropdown
+            provinceSelect.disabled = true;
+        }
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const countrySelect = document.getElementById('sister-country');
+    const provinceSelect = document.getElementById('sister-province-state');
+
+    // Initially disable the province state dropdown
+    provinceSelect.disabled = true;
+
+    countrySelect.addEventListener('change', function() {
+        const countryId = countrySelect.value;
+
+        // Clear existing options
+        provinceSelect.innerHTML = '<option value="">Select a province/state</option>';
+
+        if (countryId) {
+            // Enable the province state dropdown after country is selected
+            provinceSelect.disabled = false;
+
+            // Fetch regions for the selected country
+            fetch("{% url 'get_regions' %}?country_id=" + countryId)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate the provinces
+                    data.forEach(region => {
+                        const option = document.createElement('option');
+                        option.value = region.id;
+                        option.textContent = region.name;
+                        provinceSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching regions:', error));
+        } else {
+            // If no country is selected, disable the province state dropdown
+            provinceSelect.disabled = true;
+        }
+    });
+});
+</script>
+{% endblock content %}
+
+{% block extra_js %}
+{% endblock extra_js %}
+
+

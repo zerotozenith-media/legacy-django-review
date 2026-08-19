@@ -1,0 +1,98 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+    <style>
+         #go-back-arrow {
+            display: none !important;
+          }
+
+    </style>
+{% endblock extrastyle %}
+
+{% block content %}
+    {% include 'partials/_messages.html' %}
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4>Your Profile</h4>
+                        <hr>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <form method="POST" action="{% url 'user_profile' id=user.id %}">
+                            {% csrf_token %}
+                            <div class="form-group row">
+                                <label for="first_name" class="col-4 col-form-label">First Name</label>
+                                <div class="col-8">
+                                    <input id="first_name" name="first_name" placeholder="First Name" class="form-control here"
+                                           value="{{ user.first_name }}" type="text">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="middle_name" class="col-4 col-form-label">Middle Name</label>
+                                <div class="col-8">
+                                    <input id="middle_name" name="middle_name" placeholder="Middle Name"
+                                           class="form-control here"
+                                           value="{{ user.middle_name }}" type="text">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="last_name" class="col-4 col-form-label">Last Name</label>
+                                <div class="col-8">
+                                    <input id="last_name" name="last_name" placeholder="Last Name"
+                                           class="form-control here" value="{{ user.last_name }}" type="text">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="address" class="col-4 col-form-label">Address</label>
+                                <div class="col-8">
+                                    <input id="address" name="address" placeholder="Address"
+                                           class="form-control here" value="{{ user.address }}" type="text">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="gender" class="col-4 col-form-label">Gender</label>
+                                <div class="col-8">
+                                    <select id="gender" name="gender" class="form-control here">
+                                        <option value="" {% if user.gender == "" %}selected{% endif %}>Select Gender
+                                        </option>
+                                        <option value="male" {% if user.gender == "male" %}selected{% endif %}>Male
+                                        </option>
+                                        <option value="female" {% if user.gender == "female" %}selected{% endif %}>
+                                            Female
+                                        </option>
+                                        <option value="others" {% if user.gender == "other" %}selected{% endif %}>Other
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="email" class="col-4 col-form-label">Email</label>
+                                <div class="col-8">
+                                    <input id="email" readonly name="email" class="form-control here"
+                                           value="{{ user.email }}" type="text">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-end">
+                                        <button name="submit" type="submit" class="btn btn-primary mr-0">Update My Profile
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock content %}

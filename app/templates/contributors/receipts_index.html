@@ -1,0 +1,97 @@
+{% extends 'layouts/base.html' %}
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% load static %}
+
+{% block extrastyle %}
+    <style>
+         #go-back-arrow {
+            display: none !important;
+          }
+
+    </style>
+{% endblock extrastyle %}
+
+{% block content %}
+    {% include 'partials/_messages.html' %}
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Donation Receipt Preview</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <iframe id="receiptIframe" style="width: 100%; height: 500px; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <h1 class="text-center">Receipt Generation</h1>
+        <div class="form-row">
+            <div class="form-group col-md-2">
+                <label for="year">Year</label>
+                <input type="text" class="form-control" name="year" id="report_year" placeholder="Year of Report">
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6" id="can_summary">
+                <a href="#" onclick="generateReceipt('{% url 'offering_can_summary_report' %}', 'Offerings CAD')"
+                   class="btn btn-primary btn-block">Generate Offerings CAD Summary Receipt</a>
+            </div>
+            <div class="col-md-6" id="interac_summary">
+                <a href="#" onclick="generateReceipt('{% url 'interac_summary_report' %}', 'Interac E-Transfer')"
+                   class="btn btn-success btn-block">Generate Interac E-Transfer Summary Receipt</a>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6" id="can_letter">
+                <a href="#"
+                   onclick="generateReceipt('{% url 'offerings_can_letter_report' %}', 'Offerings CAD Official')"
+                   class="btn btn-warning btn-block">Generate Offerings CAD Official Receipt</a>
+            </div>
+            <div class="col-md-6" id="interac_letter">
+                <a href="#" onclick="generateReceipt('{% url 'interac_letter_report' %}', 'Interac E-Transfer Official')"
+                   class="btn btn-danger btn-block">Generate Interac E-Transfer Official Receipt</a>
+            </div>
+        </div>
+
+
+        <div class="row mt-4">
+            <div class="col-md-6" id="donation">
+                <a href="#" onclick="generateReceipt('{% url 'donations-receipt-list' %}', 'Donation In Kind Official')"
+                   class="btn btn-secondary btn-block">Generate Donation In Kind Official Receipt</a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            var currentDate = new Date().getFullYear() - 1;
+            $('#report_year').val(currentDate);
+            var report_year = $('#report_year').val()
+        });
+
+        function generateReceipt(url, report) {
+            Swal.fire({
+                title: `You're about to generate\n${report} Report for ${$('#report_year').val()}`,
+                text: 'Are you sure?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Generate Receipt!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to the specified URL
+                    window.location.href = `${url}?year=${$('#report_year').val()}`;
+                }
+            });
+        }
+    </script>
+{% endblock %}

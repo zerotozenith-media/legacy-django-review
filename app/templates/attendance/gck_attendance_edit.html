@@ -1,0 +1,188 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+    {% include 'attendance/church-services--modal.html' %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>GCK Attendance</h5>
+                </div>
+                <div class="card-body">
+                    <h5>Edit GCK Attendance</h5>
+                    <hr>
+                    <form action="{% url 'edit_gck_attendance' pk %}" method="post">
+                        {% include 'partials/_messages.html' %}
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <ul>
+                                    {% for field, errors in form.errors.items %}
+                                        <li>
+                                            {% for error in errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        {% csrf_token %}
+
+                        <!-- Local Church, Day, and Date Fields (First Row) -->
+                        <div class="form-section">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.day_local_church.id_for_label }}">Local Church</label>
+                                        {{ form.day_local_church }}
+
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.gck_event.id_for_label }}">Event</label>
+                                        {{ form.gck_event }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.day_name.id_for_label }}">Day</label>
+                                        {{ form.day_name }}
+                                    </div>
+                                </div>
+                                   <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.day_name.id_for_label }}">Session</label>
+                                        {{ form.session }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.day_date.id_for_label }}">Date</label>
+                                        {{ form.day_date }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4 class="py-2 text-primary">Attendance Information</h4>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.adult.id_for_label }}">Adult</label>
+                                        {{ form.adult }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.young_prf.id_for_label }}">Young Professionals</label>
+                                        {{ form.young_prf }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.campus.id_for_label }}">Campus</label>
+                                        {{ form.campus }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.youths.id_for_label }}">Youth</label>
+                                        {{ form.youths }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.children.id_for_label }}">Children</label>
+                                        {{ form.children }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.zoom.id_for_label }}">Zoom</label>
+                                        {{ form.zoom }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.youtube.id_for_label }}">YouTube</label>
+                                        {{ form.youtube }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.fb_reached.id_for_label }}">Facebook Reached</label>
+                                        {{ form.fb_reached }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.fb_likes.id_for_label }}">Facebook Likes</label>
+                                        {{ form.fb_likes }}
+                                    </div>
+                                </div>
+                                 <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.fb_comments.id_for_label }}">Facebook Comments</label>
+                                        {{ form.fb_comments }}
+                                    </div>
+                                </div>
+                                 <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.ig_reached.id_for_label }}">Instagram Reached</label>
+                                        {{ form.ig_reached }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.ig_engagement.id_for_label }}">Instagram Engagement</label>
+                                        {{ form.ig_engagement }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.adult.id_for_label }}">Converts</label>
+                                        {{ form.converts }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="{{ form.remarks.id_for_label }}">Remarks</label>
+                                        {{ form.remarks }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+{% endblock extra_js %}

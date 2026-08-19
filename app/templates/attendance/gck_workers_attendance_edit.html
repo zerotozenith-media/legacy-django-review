@@ -1,0 +1,96 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>GCK Ministers Workers</h5>
+                </div>
+                <div class="card-body">
+                    <h5>Edit Ministers Workers Attendance</h5>
+                    <hr>
+                    <form action="{% url 'edit_gck_workers_attendance' pk %}" method="post">
+                        {% include 'partials/_messages.html' %}
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <ul>
+                                    {% for field, errors in form.errors.items %}
+                                        <li>
+                                            {% for error in errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        {% csrf_token %}
+
+                        <!-- Local Church, Day, and Date Fields (First Row) -->
+                        <div class="form-section">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.day_local_church.id_for_label }}">Local Church</label>
+                                        {{ form.day_local_church }}
+
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.day_name.id_for_label }}">Day</label>
+                                        {{ form.day_name }}
+                                    </div>
+                                </div>
+                                   <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.day_name.id_for_label }}">Session</label>
+                                        {{ form.session }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="{{ form.day_date.id_for_label }}">Date</label>
+                                        {{ form.day_date }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="row">
+                                 <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="{{ form.youths.id_for_label }}">Youth</label>
+                                        {{ form.youths }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="{{ form.campus.id_for_label }}">Campus</label>
+                                        {{ form.campus }}
+                                    </div>
+                                </div>
+                                  <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="{{ form.young_prf.id_for_label }}">Young Professionals</label>
+                                        {{ form.young_prf }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+{% endblock extra_js %}

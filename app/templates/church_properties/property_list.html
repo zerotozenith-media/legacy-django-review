@@ -1,0 +1,100 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+    <style>
+         #go-back-arrow {
+            display: none !important;
+          }
+
+    </style>
+{% endblock extrastyle %}
+
+{% block content %}
+    {% include 'partials/_messages.html' %}
+    {% include "includes/filter_bar.html" %}
+    <div class="row">
+        <div class="col-xl-12 col-md-6">
+            <div class="card Recent-Users">
+                <div class="card-header d-flex justify-content-between">
+                    <h5>List of Church Properties</h5>
+                    <div class="ml-auto">
+                        <a href="{% url 'add-property' %}" class="btn btn-primary">Add Property</a>
+                        <a href="{% url 'property_uploader' %}" class="btn btn-primary">Upload Properties</a>
+                    </div>
+                </div>
+                <div class="card-block px-0 py-3 m-2">
+                    <div class="table-responsive">
+                        <table class="table table-hover custom-table" id="church_properties_datatable">
+                            <thead>
+                            <tr>
+                                <th class="text-center">Serial No.</th>
+                                <th class="text-center">Name</th>
+                                <th class="text-center">Church</th>
+                                <th class="text-center">Purchase Date</th>
+                                <th class="text-center">Paid Amount (Inc. Tax)</th>
+                                <th class="text-center">Disposal Date</th>
+                                <th class="text-center">Mode of Disposal</th>
+                                <th class="text-center">Sold Amount</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for prop in properties %}
+                                <tr>
+                                    <td class="text-center">{{ prop.serial_no }}</td>
+                                    <td class="text-center">{{ prop.name }}</td>
+                                    <td class="text-center">{{ prop.local_church }}</td>
+                                    <td class="text-center">{{ prop.purchase_date }}</td>
+                                    <td class="text-center">{{ prop.amount_paid }}</td>
+                                    <td class="text-center">{{ prop.disposal_date }}</td>
+                                    <td class="text-center">{{ prop.mode_of_disposal }}</td>
+                                    <td class="text-center">{{ prop.amount_sold }}</td>
+                                    <td class="text-center">
+                                        <a href="{% url 'edit-property' prop.id %}">
+                                          <i class="fa fa-edit text-primary" title="Edit"></i>
+                                        </a>
+                                        <a href="{% url 'delete-property' prop.id %}" id="delete_property">
+                                          <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                        </a>
+                                      </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- [ Main Content ] end -->
+    <script>
+        $(document).ready(function () {
+            $('#church_properties_datatable').DataTable();
+        });
+
+        document.querySelectorAll('#delete_property').forEach(item => {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                const deleteUrl = event.currentTarget.getAttribute('href');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You are about to delete this property!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // If confirmed, redirect to the delete URL
+                        window.location.href = deleteUrl;
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock content %}

@@ -1,0 +1,19 @@
+{% extends 'layouts/base.html' %}
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+
+{% block content %}
+<h3 class="mb-2">{% if object %}Edit{% else %}Add{% endif %} GCK Event</h3>
+
+<form method="post">
+    <div class="form-row">
+        <div class="form-group col-md-3">
+            {% csrf_token %}
+            {{ form.as_p }}
+              <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </div>
+</form>
+
+<a href="{% url 'event_list' %}">Back to Events</a>
+{% endblock %}

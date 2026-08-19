@@ -1,0 +1,130 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+    <style>
+         #go-back-arrow {
+            display: none !important;
+          }
+
+    </style>
+{% endblock extrastyle %}
+
+{% block content %}
+    {% include 'partials/_messages.html' %}
+    {% include "includes/filter_bar.html" %}
+    <div class="row">
+        <div class="col-xl-12 col-md-6">
+            <div class="card Recent-Users">
+                <div class="card-header d-flex justify-content-between">
+                    <h5>Attendance List</h5>
+                    <div>
+                        <a href="{% url 'add_attendance' %}" class="btn btn-primary">Add Attendance</a>
+                        <a href="{% url 'attendance_uploader' %}" class="btn btn-primary">Import Attendance</a>
+                    </div>
+
+                </div>
+                <div class="row mt-3">
+                    <div class="col-xl-12 col-md-6">
+                            <div class="card-body">
+                            <h5>Available Church Services</h5>
+                                <ul class="list-group list-group-flush">
+                                    {% for service in church_services %}
+                                        <li class="list-group-item py-1"><strong>{{ service.short_name }}</strong> - {{ service.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                    </div>
+                </div>
+
+                <div class="card-block px-0 py-3 m-2">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="attendance_datatable">
+                            <thead>
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th class="text-center">Date</th>
+                                 <th class="text-center">Local Church</th>
+                                <th class="text-center">Service</th>
+                                <th class="text-center">Adult (M)</th>
+                                <th class="text-center">Adult (F)</th>
+                                <th class="text-center">Youth (M)</th>
+                                <th class="text-center">Youth (F)</th>
+                                <th class="text-center">Child (M)</th>
+                                <th class="text-center">Child (F)</th>
+                                <th class="text-center">Campus (M)</th>
+                                <th class="text-center">Campus (F)</th>
+                                <th class="text-center">Caucasian</th>
+                                <th class="text-center">Visitor</th>
+                                <th class="text-center">Converts</th>
+                                <th class="text-center">Total</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for att in attendance %}
+                                <tr>
+                                    <td class="text-center">{{ att.id }}</td>
+                                    <td class="text-center">{{ att.date }}</td>
+                                     <td class="text-center">{{ att.local_church.local_church_name.title }}</td>
+                                    <td class="text-center">{{ att.church_service.name }}</td>
+                                    <td class="text-center">{{ att.adult_male }}</td>
+                                    <td class="text-center">{{ att.adult_female }}</td>
+                                    <td class="text-center">{{ att.youth_male }}</td>
+                                    <td class="text-center">{{ att.youth_female }}</td>
+                                    <td class="text-center">{{ att.children_male }}</td>
+                                    <td class="text-center">{{ att.children_female }}</td>
+                                    <td class="text-center">{{ att.campus_male }}</td>
+                                    <td class="text-center">{{ att.campus_female }}</td>
+                                    <td class="text-center">{{ att.cau }}</td>
+                                    <td class="text-center">{{ att.visitor }}</td>
+                                    <td class="text-center">{{ att.conv }}</td>
+                                    <td class="text-center font-weight-bold">{{ att.total }}</td>
+                                    <td class="text-center">
+                                        <a href="{% url 'edit_attendance' att.id %}">
+                                            <i class="fa fa-edit text-primary" title="Edit"></i>
+                                        </a>
+                                        <a href="{% url 'delete_attendance' att.id %}" id="delete_attendance">
+                                            <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- [ Main Content ] end -->
+    <script>
+        $(document).ready(function () {
+            $('#attendance_datatable').DataTable();
+        });
+
+        document.querySelectorAll('#delete_attendance').forEach(item => {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                const deleteUrl = event.currentTarget.getAttribute('href');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You are about to delete this attendance entry!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // If confirmed, redirect to the delete URL
+                        window.location.href = deleteUrl;
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock content %}

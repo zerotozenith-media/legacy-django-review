@@ -1,0 +1,56 @@
+<style>
+    .sticky-container {
+        position: sticky;
+        top: 0;
+        background-color: #f6f6f6;
+        z-index: 1000;
+        padding: 10px;
+
+    }
+</style>
+
+<div class="row mb-3 sticky-container">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-end align-items-center">
+            <form method="GET" action="." class="d-flex flex-wrap justify-content-end flex-grow-1">
+                  {% if request.user.role == 3 or request.user.role == 4 or request.user.is_staff %}
+                <select name="region" id="region-select" class="form-control m-1"
+                        style="min-width: 150px; min-height: 44px; max-width: 287px;"
+                        onchange="this.form.submit()">
+                    {% if request.user.role != 4 %}
+                    <option value="">All Regions</option>
+                     {% endif %}
+                    {% for region in regions %}
+                        <option value="{{ region.name }}"
+                            {% if region.name == selected_region %}selected{% endif %}>
+                            {{ region.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <select name="local_church" id="local_church-select" class="form-control m-1"
+                        style="min-width: 150px; max-width: 170px;" onchange="this.form.submit()">
+                       <option value="">Local Church</option>
+                    {% for church in churches %}
+                        <option value="{{ church.id }}"
+                            {% if request.user.role == 2 and church in request.user.pastor_churches.all %}selected{% elif church.id|stringformat:"s" == selected_local_church %}selected{% endif %}>
+                            {{ church.local_church_name.title }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+
+                <select name="year" id="year" class="form-control m-1"
+                        style="min-width: 100px; max-width: 120px;" onchange="this.form.submit()">
+                      <option value="">Year</option>
+                    {% for year in years %}
+                        <option value="{{ year }}"
+                                {% if year|stringformat:"s" == selected_year|stringformat:"s" %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+</div>

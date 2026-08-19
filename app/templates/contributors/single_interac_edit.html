@@ -1,0 +1,127 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+<!-- Modal -->
+<div class="modal fade" id="selectChurchModal" tabindex="-1" role="dialog" aria-labelledby="selectChurchModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="selectChurchModalLabel">Select Local Church</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Please select a local church before entering a donor name.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="userNotFoundModal" tabindex="-1" role="dialog" aria-labelledby="userNotFoundModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userNotFoundModalLabel">User Not Found</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Unable to locate the donor in the database. Do you have the donor's email? If yes, please add them as a
+                member. Otherwise, proceed to add them as a Non-member.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="proceed-btn">Proceed</button>
+                <a class="btn btn-primary text-decoration-none" href="/authentication/users/">Add User</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Interac Deposit</h5>
+            </div>
+            <div class="card-body">
+                <h5>Edit Donation</h5>
+                <hr>
+                <form  id="donation-form"  action="{% url 'interec_e_transfer' contribution.id contribution.type %}" method="post">
+                    {% include 'partials/_messages.html' %}
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            {{ form.local_church.label_tag }}
+                            {{ form.local_church }}
+                            {% if form.local_church.errors %}
+                            <div class="text-danger">{{ form.local_church.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            {{ form.name.label_tag }}
+                            {{ form.name }}
+                            <ul id="donor-suggestions" class="list-group"></ul>
+                            {% if form.name.errors %}
+                            <div class="text-danger">{{ form.name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            {{ form.date.label_tag }}
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                            <div class="text-danger">{{ form.date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            {{ form.amount.label_tag }}
+                            {{ form.amount }}
+                            {% if form.amount.errors %}
+                            <div class="text-danger">{{ form.amount.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                      <div class="form-group col-md-4 mt-1 mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input p-2" type="checkbox" role="switch"
+                                       id="special_contribution"
+                                       name="special_contribution"
+                                       value="on"
+                                           {% if contribution.special_contribution %}checked{% endif %}
+                                >
+                                <label class="form-check-label" for="special_contribution">Special
+                                    Contribution</label>
+                            </div>
+                        </div>
+
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+
+{% endblock extra_js %}

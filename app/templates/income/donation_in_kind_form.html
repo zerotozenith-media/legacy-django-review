@@ -1,0 +1,69 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>{% if object %}Edit{% else %}Add{% endif %} Donation In Kind</h5>
+                </div>
+                <div class="card-body">
+                    <form action="" method="post" enctype="multipart/form-data">
+                        {% include 'partials/_messages.html' %}
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label for="local_church">Local Church</label>
+                            {{ form.local_church }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="donor">Donor (Registered User)</label>
+                            {{ form.donor }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="donor_name">Donor Name (if not registered)</label>
+                            {{ form.donor_name }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="donation_item">Item Donated</label>
+                            {{ form.donation_item }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="serial_no">Serial No</label>
+                            {{ form.serial_no }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            {{ form.description }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="donation_date">Date of Donation</label>
+                            {{ form.donation_date }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estimated_value">Estimated Value</label>
+                            {{ form.estimated_value }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="image">Upload Image (Optional)</label>
+                            {{ form.image }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">{% if object %}Update{% else %}Submit{% endif %}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

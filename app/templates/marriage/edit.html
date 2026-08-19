@@ -1,0 +1,141 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Marriage Record</h5>
+            </div>
+            <div class="card-body">
+                <h5>Add Marriage Record</h5>
+                <hr>
+                <form action="{% url 'edit_marriage_record' pk %}" method="post">
+                    {% include 'partials/_messages.html' %}
+                    {% csrf_token %}
+
+                    <!-- Brother's Details Section -->
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <h5>Brother's Details</h5>
+                            <div class="form-group">
+                                <label for="{{ form.brother_name.id_for_label }}">Brother's Name</label>
+                                {{ form.brother_name }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.brother_local_church.id_for_label }}">Brother's Local Church</label>
+                                {{ form.brother_local_church }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.brother_country.id_for_label }}">Brother's Country</label>
+                                {{ form.brother_country }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.brother_province_state.id_for_label }}">Brother's Province/State</label>
+                                {{ form.brother_province_state }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.brother_medical_tests_submitted.id_for_label }}">Brother's Medical Tests Submitted</label>
+                                {{ form.brother_medical_tests_submitted }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.brother_medical_tests_reviewed.id_for_label }}">Brother's Medical Tests Reviewed</label>
+                                {{ form.brother_medical_tests_reviewed }}
+                            </div>
+                        </div>
+
+                        <!-- Sister's Details Section -->
+                        <div class="col-md-6 col-sm-12">
+                            <h5>Sister's Details</h5>
+                            <div class="form-group">
+                                <label for="{{ form.sister_name.id_for_label }}">Sister's Name</label>
+                                {{ form.sister_name }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.sister_local_church.id_for_label }}">Sister's Local Church</label>
+                                {{ form.sister_local_church }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.sister_country.id_for_label }}">Sister's Country</label>
+                                {{ form.sister_country }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.sister_province_state.id_for_label }}">Sister's Province/State</label>
+                                {{ form.sister_province_state }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.sister_medical_tests_submitted.id_for_label }}">Sister's Medical Tests Submitted</label>
+                                {{ form.sister_medical_tests_submitted }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.sister_medical_tests_reviewed.id_for_label }}">Sister's Medical Tests Reviewed</label>
+                                {{ form.sister_medical_tests_reviewed }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group w-100">
+                        <label for="{{ form.remarks.id_for_label }}">Remarks</label>
+                        {{ form.remarks }}
+                    </div>
+                     <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function setupCountryListener(countrySelectId, provinceSelectId) {
+        const countrySelect = document.getElementById(countrySelectId);
+        const provinceSelect = document.getElementById(provinceSelectId);
+
+        function fetchProvinces(countryId) {
+            if (!countryId) {
+                provinceSelect.innerHTML = '<option value="">Select a province/state</option>';
+                provinceSelect.disabled = true;
+                return;
+            }
+
+            fetch("{% url 'get_regions' %}?country_id=" + countryId)
+                .then(response => response.json())
+                .then(data => {
+                    provinceSelect.innerHTML = '<option value="">Select a province/state</option>';
+                    data.forEach(region => {
+                        const option = document.createElement('option');
+                        option.value = region.id;
+                        option.textContent = region.name;
+                        provinceSelect.appendChild(option);
+                    });
+
+                    provinceSelect.disabled = data.length === 0;
+                })
+                .catch(error => console.error('Error fetching regions:', error));
+        }
+
+        // When a country is changed, fetch its provinces
+        countrySelect.addEventListener('change', function() {
+            fetchProvinces(countrySelect.value);
+        });
+
+        // Check if a country is pre-selected on page load
+        if (countrySelect.value) {
+            fetchProvinces(countrySelect.value);
+        }
+    }
+
+    // Setup for both brother and sister
+    setupCountryListener('brother-country', 'brother-province-state');
+    setupCountryListener('sister-country', 'sister-province-state');
+});
+</script>
+{% endblock content %}
+
+{% block extra_js %}
+{% endblock extra_js %}
+
+

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h1, h2 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #000; padding: 5px; text-align: center; }
+        .bg-secondary { background-color: #00020a; color: white; }
+        .bg-total { background-color: #16365e; color: white; font-weight: bold; }
+        .bg-gray { background-color: #f8f9fa; }
+        .logo { width: 40%; height: auto; display: block; margin: auto; }
+        .details, .footer { margin-bottom: 20px; text-align: center; }
+        .footer { background: #f4f4f4; margin-top: 20px; padding: 15px; font-size: 0.9em; text-align: center; }
+    </style>
+</head>
+<body>
+    <img src="data:image/jpg;base64,{{ report_logo }}" alt="Organization Logo" class="logo">
+    <h1>Official GCK Report - {{ year_month }}</h1>
+    <h2 class="text-center">{{ event_name }}</h2>
+    <table>
+        <thead>
+            <tr class="bg-secondary">
+                <th colspan="3">Details</th>
+                <th colspan="6">Physical Attendance</th>
+                <th>Remarks</th>
+                <th colspan="3">Virtual Audience</th>
+                <th colspan="3">Facebook</th>
+                <th colspan="2">Instagram</th>
+                <th>Converts</th>
+            </tr>
+            <tr>
+                <th>Location</th>
+                <th>Day</th>
+                <th>Date</th>
+                <th>Adult</th>
+                <th>Young Prof</th>
+                <th>Campus</th>
+                <th>Youths</th>
+                <th>Children</th>
+                <th>Total</th>
+                <th>Remarks</th>
+                <th>Zoom</th>
+                <th>YouTube</th>
+                <th>Total</th>
+                <th>Reached</th>
+                <th>Likes</th>
+                <th>Comments</th>
+                <th>Reached</th>
+                <th>Engagement</th>
+                <th>Converts</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for region in data %}
+            <tr class="bg-gray">
+                <td colspan="19">{{ region.name }}</td>
+            </tr>
+            {% for church in region.churches %}
+            <tr>
+                <td rowspan="{{ church.days|length|add:1 }}">{{ church.name }}</td>
+                {% for day in church.days %}
+                <tr>
+                    <td>{{ day.day }}</td>
+                    <td>{{ day.date }}</td>
+                    <td>{{ day.adult }}</td>
+                    <td>{{ day.young_prf }}</td>
+                    <td>{{ day.campus }}</td>
+                    <td>{{ day.youths }}</td>
+                    <td>{{ day.children }}</td>
+                    <td>{{ day.adult|add:day.young_prf|add:day.campus|add:day.youths|add:day.children }}</td>
+                    <td>{{ day.remarks }}</td>
+                    <td>{{ day.zoom }}</td>
+                    <td>{{ day.youtube }}</td>
+                    <td>{{ day.zoom|add:day.youtube }}</td>
+                    <td>{{ day.fb_reached }}</td>
+                    <td>{{ day.fb_likes }}</td>
+                    <td>{{ day.fb_comments }}</td>
+                    <td>{{ day.ig_reached }}</td>
+                    <td>{{ day.ig_engagement }}</td>
+                    <td>{{ day.converts }}</td>
+                </tr>
+                {% endfor %}
+            <tr class="bg-total">
+                <td>{{ church.name }} Total</td>
+                <td>-</td>
+                <td>-</td>
+                <td>{{ church.total.adult }}</td>
+                <td>{{ church.total.young_prf }}</td>
+                <td>{{ church.total.campus }}</td>
+                <td>{{ church.total.youths }}</td>
+                <td>{{ church.total.children }}</td>
+                <td>{{ church.total.adult|add:church.total.young_prf|add:church.total.campus|add:church.total.youths|add:church.total.children }}</td>
+                <td>-</td>
+                <td>{{ church.total.zoom }}</td>
+                <td>{{ church.total.youtube }}</td>
+                <td>{{ church.total.zoom|add:church.total.youtube }}</td>
+                <td>{{ church.total.fb_reached }}</td>
+                <td>{{ church.total.fb_likes }}</td>
+                <td>{{ church.total.fb_comments }}</td>
+                <td>{{ church.total.ig_reached }}</td>
+                <td>{{ church.total.ig_engagement }}</td>
+                <td>{{ church.total.converts }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Footer Section -->
+    <div class="footer">
+        <p><strong>Deeper Christian Life Ministry, Canada</strong></p>
+        <p>10672-62 Avenue, Edmonton, Alberta T6H 1M8</p>
+        <p>Phone: <a href="tel:18887101517">1-888-710-1517</a> | Email: <a href="mailto:admin@deeperlife.ca">admin@deeperlife.ca</a></p>
+        <p>Website: <a href="https://www.deeperlife.ca" target="_blank">www.deeperlife.ca</a></p>
+    </div>
+</body>
+</html>

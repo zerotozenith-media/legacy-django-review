@@ -1,0 +1,234 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+<!-- Modal -->
+<div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="registerModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registerUserModal"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+              <div class="modal-body" id="modalBodyContent">
+                <!-- Dynamic content will be injected here -->
+            </div>
+            <div class="modal-footer" id="modalFooterContent">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="proceed-btn">Save as Miscellaneous User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="mb-2">Update Profile</h4>
+                <hr class="mb-5">
+                <form action="{% url 'update_miscellaneous_user_profile' id=user.id %}" method="post">
+                    {% include 'partials/_messages.html' %}
+                    {% csrf_token %}
+                    {% if user.local_churches %}
+                    <div class="form-group row">
+                        <label for="local_church" class="col-4 col-form-label">Local Church</label>
+                        <div class="col-8">
+                            <select class="form-control here" name="local_church">
+                                {% if request.user.role != 2 %}
+                                <option value="">Select Church</option>
+                                {% endif %}
+                                {% for local_church in user.local_churches %}
+                                <option name="local_church" value="{{ local_church.id }}">
+                                    {{ local_church.local_church_name.title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="form-group row">
+                        <label for="local_church" class="col-4 col-form-label">Local Church</label>
+                        <div class="col-8">
+                            <input readonly class="form-control here"
+                                   placeholder="Local Church"
+                                   value="{{ user.local_church.local_church_name }}" type="text">
+                            <input type="hidden" id="local_church" name="local_church" value="{{ user.local_church.id }}">
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="form-group row">
+                        <label for="full_name" class="col-4 col-form-label">Full Name</label>
+                        <div class="col-8">
+                            <input id="full_name" name="full_name"
+                                   {% if not user.can_edit_full_name %}readonly{% endif %}
+                                   placeholder="Full Name"
+                                   class="form-control here"
+                                   value="{{ user.full_name }}" type="text">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="first_name" class="col-4 col-form-label">First Name</label>
+                        <div class="col-8">
+                            <input id="first_name" name="first_name" placeholder="First Name"
+                                   class="form-control here"
+                                   value="{{ user.first_name }}" type="text">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="middle_name" class="col-4 col-form-label">Middle Name</label>
+                        <div class="col-8">
+                            <input id="middle_name" name="middle_name" placeholder="Middle Name"
+                                   class="form-control here"
+                                   value="{{ user.middle_name }}" type="text">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="last_name" class="col-4 col-form-label">Last Name</label>
+                        <div class="col-8">
+                            <input id="last_name" name="last_name" placeholder="Last Name"
+                                   class="form-control here" value="{{ user.last_name }}" type="text">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="email" class="col-4 col-form-label">Email</label>
+                        <div class="col-8">
+                            <input id="email" type="email" name="email" class="form-control here"
+                                   placeholder="Email"
+                                   value="{{ user.email }}">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="address" class="col-4 col-form-label">Address</label>
+                        <div class="col-8">
+                            <input id="address" name="address" placeholder="Address" multiple
+                                   class="form-control here" value="{{ user.address }}" type="text">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-end">
+                                <button name="action" value="save" type="submit" class="btn btn-secondary mr-5">
+                                    Save
+                                </button>
+                                <button name="action" value="register" type="submit" class="btn btn-primary">
+                                    Register as a User
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const donationForm = document.querySelector('form'); // Target the form
+    const proceedButton = document.getElementById('proceed-btn'); // "Proceed" button in modal
+    const modalTitle = document.getElementById('registerUserModal');
+    const modalBodyContent = document.getElementById('modalBodyContent');
+
+    // Form submission logic
+    donationForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const clickedButton = document.activeElement
+        const buttonValue = clickedButton.value;
+
+        const fullName = document.getElementById('full_name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        let titleContent = '';
+        let modalContent = '';
+        let proceedButtonText = '';
+
+
+        if (!fullName || !email) {
+            titleContent = 'Incomplete Profile Details';
+            proceedButtonText = 'Save as Miscellaneous User'
+            modalContent = `
+                 <p>
+                    A miscellaneous user must have a valid <strong>Full Name</strong> and <strong>Email</strong>,
+                    to be registered as a regular user. These details are essential to issue tax receipts for their contributions.
+                </p>
+                <p>
+                    Only registered users are eligible to receive <strong>tax receipts</strong> for their contributions or donations.
+                </p>
+                <p>If you don't have the full name and email yet, please click <strong>Save as Miscellaneous User</strong> to continue saving the user as
+                a miscellaneous user.</p>
+            `;
+
+            if (buttonValue === 'save') {
+                modalContent = `
+                        <p>
+                            Only registered users are eligible to receive <strong>tax receipts</strong> for their contributions or donations.
+                        </p>
+                        <p>If you don't have the full name and email yet, please click <strong>Save as Miscellaneous User</strong> to continue saving the user as
+                        a miscellaneous user.</p>
+                    `;
+
+                titleContent = 'Save as Miscellaneous User';
+
+            }
+
+        } else {
+            titleContent = 'Eligible to be registered as a regular user';
+            proceedButtonText = 'Register as a regular user'
+            modalContent = `
+                <ul>
+                    <li><strong>Full Name:</strong> ${fullName}</li>
+                    <li><strong>Email:</strong> ${email}</li>
+                </ul>
+                <p>This miscellaneous user now have a valid <strong>Email</strong> and <strong>Full Name</strong>.</p>
+                <p>This makes such a <strong>miscellaneous user</strong> eligible to be saved as a <strong>regular user</strong>,
+                allowing them to receive tax receipts for their contributions or donations.</p>
+                <p>If everything looks correct, click <strong>Save as Regular User</strong> to continue.</p>
+            `;
+
+            if (buttonValue === 'register') {
+                modalContent = `
+                            <p>
+                                The information you have provided will be used to register this miscellaneous user as a regular user.
+                                Tax receipts for any contributions or donations will be sent to the email address provided.
+                            </p>
+                            <p>
+                                If all the details are correct, please click <strong>Save as Regular User</strong> to complete the registration.
+                            </p>
+                        `;
+
+                titleContent = 'Register as a regular user';
+
+            }
+
+        }
+
+        modalTitle.textContent = titleContent;
+        modalBodyContent.innerHTML = modalContent;
+        proceedButton.textContent = proceedButtonText
+        $('#registerModal').modal('show');
+    });
+
+    // Handle "Proceed" button in the modal
+    proceedButton.addEventListener('click', function () {
+        console.log('Proceed clicked. Submitting form...');
+        $('#registerModal').modal('hide'); // Close the modal
+        donationForm.submit(); // Now allow the form to submit
+    });
+});
+
+
+
+
+
+</script>
+
+
+{% endblock extra_js %}

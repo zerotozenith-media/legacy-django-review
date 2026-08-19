@@ -1,0 +1,113 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+    <style>
+         #go-back-arrow {
+            display: none !important;
+          }
+
+    </style>
+{% endblock extrastyle %}
+
+{% block content %}
+    {% include 'partials/_messages.html' %}
+    <div class="row">
+        <div class="col-xl-12 col-md-6">
+            <div class="card Recent-Users">
+                <div class="card-header d-flex justify-content-between">
+                    <h5>Marriage Proposing Partners Register</h5>
+                        <a href="{% url 'add_marriage_record' %}" class="btn btn-primary">Add Marriage Record</a>
+                </div>
+                <div class="card-block px-0 py-3 m-2">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="attendance_datatable">
+                             <thead>
+                                <tr>
+                                    <th class="text-center">#</th>
+                                    <th class="text-center">Brother's Name</th>
+                                    <th class="text-center">Brother's Church</th>
+                                    <th class="text-center">Brother's Country</th>
+                                    <th class="text-center">Brother's State/Province</th>
+                                    <th class="text-center">Brother's Medical Test Submitted</th>
+                                    <th class="text-center">Brother's Medical Test Reviewed</th>
+                                    <th class="text-center">Sister's Name</th>
+                                    <th class="text-center">Sister's Church</th>
+                                    <th class="text-center">Sister's Country</th>
+                                    <th class="text-center">Sister's State/Province</th>
+                                    <th class="text-center">Sister's Medical Test Submitted</th>
+                                    <th class="text-center">Sister's Medical Test Reviewed</th>
+                                    <th class="text-center">Remarks</th>
+                                     {% if request.user.role == 5 or request.user.is_staff %}
+                                    <th class="text-center">Actions</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in marriage_records %}
+                                    <tr>
+                                        <td class="text-center">{{ record.id }}</td>
+                                        <td class="text-center">{{ record.brother_name }}</td>
+                                        <td class="text-center">{{ record.brother_local_church }}</td>
+                                        <td class="text-center">{{ record.brother_country }}</td>
+                                        <td class="text-center">{{ record.brother_province_state }}</td>
+                                        <td class="text-center">{{ record.brother_medical_tests_submitted }}</td>
+                                        <td class="text-center">{{ record.brother_medical_tests_reviewed }}</td>
+                                        <td class="text-center">{{ record.sister_name }}</td>
+                                        <td class="text-center">{{ record.sister_local_church }}</td>
+                                        <td class="text-center">{{ record.sister_country }}</td>
+                                        <td class="text-center">{{ record.sister_province_state }}</td>
+                                        <td class="text-center">{{ record.sister_medical_tests_submitted }}</td>
+                                        <td class="text-center">{{ record.sister_medical_tests_reviewed }}</td>
+                                        <td class="text-center">{{ record.remarks }}</td>
+                                         {% if request.user.role == 5 or request.user.is_staff %}
+                                        <td class="text-center">
+                                            <a href="{% url 'edit_marriage_record' record.id %}">
+                                                <i class="fa fa-edit text-primary" title="Edit"></i>
+                                            </a>
+                                            <a href="{% url 'delete_marriage_record' record.id %}" id="delete_marriage_record">
+                                                <i class="fa fa-trash text-danger ml-2" title="Delete"></i>
+                                            </a>
+                                        </td>
+                                        {% else %}
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- [ Main Content ] end -->
+    <script>
+        $(document).ready(function () {
+            $('#attendance_datatable').DataTable();
+        });
+
+        document.querySelectorAll('#delete_marriage_record').forEach(item => {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                const deleteUrl = event.currentTarget.getAttribute('href');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You are about to delete this attendance entry!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // If confirmed, redirect to the delete URL
+                        window.location.href = deleteUrl;
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock content %}

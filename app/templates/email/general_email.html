@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DCLM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #f4f4f9;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .email-header {
+            background-color: #16365e;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+        .email-body {
+            padding: 20px;
+            color: #02060a;
+            line-height: 1.6;
+        }
+        .email-body p {
+            margin: 10px 0;
+        }
+        .email-footer {
+            background-color: #16365e;
+            color: #ffffff;
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+        }
+        .token {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #f1f1f1;
+            border: 1px dashed #16365e;
+            font-size: 20px;
+            font-weight: bold;
+            color: #16365e;
+            text-align: center;
+            margin: 20px auto;
+            border-radius: 5px;
+        }
+        .signature {
+            font-style: italic;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        <p>{{ heading }}</p>
+    </div>
+    <div class="email-body">
+        <p>Dear {{ first_name }},</p>
+        <p>Greetings in the name of our Lord Jesus Christ.</p>
+        <div>{{ message|safe }}</div>
+
+        <p>God bless you.</p>
+
+        <p class="signature">Best regards,
+            <br> DCLM Canada IT
+        </p>
+
+        <p><i>This is an automated email. Please do not reply to this message as replies are not monitored.</i></p>
+    </div>
+    <div class="email-footer">
+        <p>&copy; 2024 DCLM. All rights reserved.</p>
+        <p>This is a no-reply email. If you need assistance, contact us at
+            <a href="mailto:it-support@deeperlife.ca" style="color: #9ccfff; text-decoration: none;">DCLM Canada IT</a>
+        </p>
+    </div>
+</div>
+</body>
+</html>

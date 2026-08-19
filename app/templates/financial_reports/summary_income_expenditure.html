@@ -1,0 +1,328 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% block extrastyle %}
+<style>
+    #go-back-arrow { display: none !important; }
+
+    /* ---- Color scheme: swap these to match dashboard.css / main.css ---- */
+    :root {
+        --fr-primary: #4680ff;
+        --fr-primary-dark: #2c5cc5;
+        --fr-primary-tint: #eef3ff;
+        --fr-positive: #1fa971;
+        --fr-positive-tint: #e8f8f1;
+        --fr-negative: #e5566d;
+        --fr-negative-tint: #fdecef;
+        --fr-text: #2b2f3a;
+        --fr-muted: #8a94a6;
+        --fr-border: #edf0f5;
+        --fr-surface: #ffffff;
+        --fr-bg: #f7f8fb;
+    }
+
+    .fr-page { color: var(--fr-text); }
+
+    .fr-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .fr-header h2 { font-weight: 700; font-size: 1.5rem; margin: 0; }
+    .fr-header p { color: var(--fr-muted); margin: 0.15rem 0 0; font-size: 0.9rem; }
+
+    .fr-filter {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--fr-surface);
+        border: 1px solid var(--fr-border);
+        border-radius: 999px;
+        padding: 0.35rem 0.5rem 0.35rem 1rem;
+        box-shadow: 0 2px 6px rgba(20, 30, 60, 0.04);
+    }
+    .fr-filter select { border: none; background: transparent; font-weight: 600; color: var(--fr-text); padding-right: 0.5rem; }
+    .fr-filter select:focus { outline: none; box-shadow: none; }
+    .fr-filter button { border-radius: 999px; padding: 0.4rem 1.1rem; font-weight: 600; font-size: 0.85rem; background: var(--fr-primary); border: none; }
+    .fr-filter button:hover { background: var(--fr-primary-dark); }
+
+    .fr-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .fr-kpi { background: var(--fr-surface); border: 1px solid var(--fr-border); border-radius: 14px; padding: 1.1rem 1.25rem; box-shadow: 0 2px 10px rgba(20, 30, 60, 0.04); border-left: 4px solid var(--fr-primary); }
+    .fr-kpi.is-positive { border-left-color: var(--fr-positive); }
+    .fr-kpi.is-negative { border-left-color: var(--fr-negative); }
+    .fr-kpi-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--fr-muted); font-weight: 600; margin-bottom: 0.35rem; }
+    .fr-kpi-value { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .fr-kpi-value.is-positive { color: var(--fr-positive); }
+    .fr-kpi-value.is-negative { color: var(--fr-negative); }
+
+    .fr-card { background: var(--fr-surface); border: 1px solid var(--fr-border); border-radius: 14px; box-shadow: 0 2px 10px rgba(20, 30, 60, 0.04); margin-bottom: 1.75rem; overflow: hidden; }
+    .fr-card-header { display: flex; align-items: center; gap: 0.6rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--fr-border); }
+    .fr-card-header i { color: var(--fr-primary); font-size: 1rem; }
+    .fr-card-header h5 { margin: 0; font-weight: 700; font-size: 1rem; }
+
+    .fr-table-wrap { overflow-x: auto; }
+    table.fr-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; white-space: nowrap; }
+    table.fr-table thead th {
+        position: sticky; top: 0; background: var(--fr-bg); color: var(--fr-muted);
+        font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; font-weight: 700;
+        padding: 0.6rem 0.9rem; border-bottom: 2px solid var(--fr-border); z-index: 2;
+    }
+    table.fr-table thead th:first-child, table.fr-table tbody td:first-child {
+        position: sticky; left: 0; background: var(--fr-surface); z-index: 1; text-align: left; white-space: normal; min-width: 220px;
+    }
+    table.fr-table thead th:first-child { background: var(--fr-bg); z-index: 3; }
+    table.fr-table tbody td { padding: 0.55rem 0.9rem; text-align: right; border-bottom: 1px solid var(--fr-border); font-variant-numeric: tabular-nums; }
+    table.fr-table tbody tr:hover td { background: var(--fr-primary-tint); }
+    table.fr-table tbody tr:hover td:first-child { background: var(--fr-primary-tint); }
+
+    .fr-zero { color: var(--fr-muted); opacity: 0.55; }
+    .fr-row-total td { font-weight: 700; background: var(--fr-bg); }
+    .fr-row-total td:first-child { background: var(--fr-bg); }
+    .fr-row-grand td { font-weight: 700; background: var(--fr-primary-tint); color: var(--fr-primary-dark); }
+    .fr-row-grand td:first-child { background: var(--fr-primary-tint); }
+    .fr-row-positive td { color: var(--fr-positive); background: var(--fr-positive-tint); }
+    .fr-row-positive td:first-child { background: var(--fr-positive-tint); }
+    .fr-row-negative td { color: var(--fr-negative); background: var(--fr-negative-tint); }
+    .fr-row-negative td:first-child { background: var(--fr-negative-tint); }
+
+    tr.fr-category-toggle { cursor: pointer; }
+    tr.fr-category-toggle td { background: var(--fr-bg) !important; font-weight: 700; color: var(--fr-text); }
+    tr.fr-category-toggle .fr-chevron { display: inline-block; transition: transform 0.15s ease; margin-right: 0.4rem; color: var(--fr-primary); }
+    tr.fr-category-toggle.collapsed .fr-chevron { transform: rotate(-90deg); }
+    tr.fr-subrow td:first-child { padding-left: 2.2rem; color: var(--fr-muted); font-weight: 400; }
+
+    .fr-empty-state { text-align: center; color: var(--fr-muted); padding: 2rem 1rem; }
+</style>
+{% endblock extrastyle %}
+
+{% block content %}
+<div class="fr-page">
+
+    <div class="fr-header">
+        <div>
+            <h2>Summary of Income &amp; Expenditure</h2>
+            <p>Regional breakdown for {{ year }}{% if month %} &middot; Month {{ month }}{% endif %}</p>
+        </div>
+        <form method="get" class="fr-filter">
+            <select name="year" onchange="this.form.submit()">
+                {% for y in years %}
+                <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+
+    <div class="fr-kpis">
+        <div class="fr-kpi">
+            <div class="fr-kpi-label">Total Income</div>
+            <div class="fr-kpi-value">${{ report.total_grand|floatformat:2 }}</div>
+        </div>
+        <div class="fr-kpi">
+            <div class="fr-kpi-label">Income Net of Transfers</div>
+            <div class="fr-kpi-value">${{ report.total2_grand|floatformat:2 }}</div>
+        </div>
+        <div class="fr-kpi">
+            <div class="fr-kpi-label">Total Expenses</div>
+            <div class="fr-kpi-value">${{ report.total_expense|floatformat:2 }}</div>
+        </div>
+        <div class="fr-kpi {% if report.surplus_deficit >= 0 %}is-positive{% else %}is-negative{% endif %}">
+            <div class="fr-kpi-label">Surplus / Deficit</div>
+            <div class="fr-kpi-value {% if report.surplus_deficit >= 0 %}is-positive{% else %}is-negative{% endif %}">
+                ${{ report.surplus_deficit|floatformat:2 }}
+            </div>
+        </div>
+        <div class="fr-kpi">
+            <div class="fr-kpi-label">Capital Expenditure</div>
+            <div class="fr-kpi-value">${{ report.total_capital|floatformat:2 }}</div>
+        </div>
+    </div>
+
+    <div class="fr-card">
+        <div class="fr-card-header">
+            <i class="fa fa-arrow-trend-up"></i>
+            <h5>Income</h5>
+        </div>
+        <div class="fr-table-wrap">
+            <table class="fr-table">
+                <thead>
+                    <tr>
+                        <th>Source</th>
+                        {% for region in report.regions %}<th>{{ region }}</th>{% endfor %}
+                        <th>Gross Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in report.income_rows %}
+                    <tr>
+                        <td>{{ row.label }}</td>
+                        {% for v in row.values %}
+                            <td class="{% if v == 0 %}fr-zero{% endif %}">{{ v|floatformat:2 }}</td>
+                        {% endfor %}
+                        <td class="{% if row.total == 0 %}fr-zero{% endif %}" style="font-weight:600;">{{ row.total|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="{{ report.regions|length|add:2 }}" class="fr-empty-state">No income recorded for this period</td></tr>
+                    {% endfor %}
+                    <tr class="fr-row-total">
+                        <td>Total Income</td>
+                        {% for v in report.total_by_region %}<td>{{ v|floatformat:2 }}</td>{% endfor %}
+                        <td>{{ report.total_grand|floatformat:2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if report.transfer_rows %}
+    <div class="fr-card">
+        <div class="fr-card-header">
+            <i class="fa fa-right-left"></i>
+            <h5>Transfers Within Churches Accounts</h5>
+        </div>
+        <div class="fr-table-wrap">
+            <table class="fr-table">
+                <thead>
+                    <tr>
+                        <th>Transfer Type</th>
+                        {% for region in report.regions %}<th>{{ region }}</th>{% endfor %}
+                        <th>Gross Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in report.transfer_rows %}
+                    <tr>
+                        <td>{{ row.label }}</td>
+                        {% for v in row.values %}
+                            <td class="{% if v == 0 %}fr-zero{% endif %}">{{ v|floatformat:2 }}</td>
+                        {% endfor %}
+                        <td style="font-weight:600;">{{ row.total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="fr-row-grand">
+                        <td>Income Net of Transfers (Total 2)</td>
+                        {% for v in report.total2_by_region %}<td>{{ v|floatformat:2 }}</td>{% endfor %}
+                        <td>{{ report.total2_grand|floatformat:2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="fr-card">
+        <div class="fr-card-header">
+            <i class="fa fa-arrow-trend-down"></i>
+            <h5>Recurrent Expenditure</h5>
+        </div>
+        <div class="fr-table-wrap">
+            <table class="fr-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        {% for region in report.regions %}<th>{{ region }}</th>{% endfor %}
+                        <th>Gross Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in report.recurrent_groups %}
+                    <tr class="fr-category-toggle">
+                        <td><i class="fa fa-chevron-down fr-chevron"></i>{{ category.category }}</td>
+                        {% for v in category.values %}<td>{{ v|floatformat:2 }}</td>{% endfor %}
+                        <td>{{ category.total|floatformat:2 }}</td>
+                    </tr>
+                    {% for sub in category.rows %}
+                    <tr class="fr-subrow">
+                        <td>{{ sub.label }}</td>
+                        {% for v in sub.values %}
+                            <td class="{% if v == 0 %}fr-zero{% endif %}">{{ v|floatformat:2 }}</td>
+                        {% endfor %}
+                        <td class="{% if sub.total == 0 %}fr-zero{% endif %}">{{ sub.total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% empty %}
+                    <tr><td colspan="{{ report.regions|length|add:2 }}" class="fr-empty-state">No expense data available</td></tr>
+                    {% endfor %}
+                    <tr class="fr-row-total">
+                        <td>Total Expenses</td>
+                        <td colspan="{{ report.regions|length }}"></td>
+                        <td>{{ report.total_expense|floatformat:2 }}</td>
+                    </tr>
+                    <tr class="{% if report.surplus_deficit >= 0 %}fr-row-positive{% else %}fr-row-negative{% endif %}">
+                        <td>Surplus / Deficit</td>
+                        <td colspan="{{ report.regions|length }}"></td>
+                        <td>{{ report.surplus_deficit|floatformat:2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="fr-card">
+        <div class="fr-card-header">
+            <i class="fa fa-building-columns"></i>
+            <h5>Capital Expenditure</h5>
+        </div>
+        <div class="fr-table-wrap">
+            <table class="fr-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        {% for region in report.regions %}<th>{{ region }}</th>{% endfor %}
+                        <th>Gross Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in report.capital_groups %}
+                    <tr class="fr-category-toggle">
+                        <td><i class="fa fa-chevron-down fr-chevron"></i>{{ category.category }}</td>
+                        {% for v in category.values %}<td>{{ v|floatformat:2 }}</td>{% endfor %}
+                        <td>{{ category.total|floatformat:2 }}</td>
+                    </tr>
+                    {% for sub in category.rows %}
+                    <tr class="fr-subrow">
+                        <td>{{ sub.label }}</td>
+                        {% for v in sub.values %}
+                            <td class="{% if v == 0 %}fr-zero{% endif %}">{{ v|floatformat:2 }}</td>
+                        {% endfor %}
+                        <td class="{% if sub.total == 0 %}fr-zero{% endif %}">{{ sub.total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% empty %}
+                    <tr><td colspan="{{ report.regions|length|add:2 }}" class="fr-empty-state">No capital expenditure data available</td></tr>
+                    {% endfor %}
+                    <tr class="fr-row-total">
+                        <td>Total Capital</td>
+                        <td colspan="{{ report.regions|length }}"></td>
+                        <td>{{ report.total_capital|floatformat:2 }}</td>
+                    </tr>
+                    <tr class="fr-row-grand">
+                        <td>Overall Position</td>
+                        <td colspan="{{ report.regions|length }}"></td>
+                        <td>{{ report.surplus_deficit|add:report.total_capital|floatformat:2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Click a category header row to collapse/expand its subrows.
+        // Subrows are every .fr-subrow immediately following the toggle,
+        // stopping at the next toggle row or a totals row.
+        $('.fr-category-toggle').on('click', function () {
+            var $row = $(this);
+            var $subrows = $row.nextUntil('.fr-category-toggle, .fr-row-total, .fr-row-positive, .fr-row-negative, .fr-row-grand');
+            $subrows.toggle();
+            $row.toggleClass('collapsed');
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+    {% include 'attendance/church-services--modal.html' %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Church Attendance</h5>
+                </div>
+                <div class="card-body">
+                    <h5>Update Attendance</h5>
+                    <hr>
+                    <form action="{% url 'edit_attendance' attendance.id %}" method="post">
+                        {% include 'partials/_messages.html' %}
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="local_church">Church</label>
+                                <select class="form-control" name="local_church" required>
+                                    <option value="">Select Church</option>
+                                    {% for church in local_churches %}
+                                        <option name="local_church" value="{{ church.id }}"
+                                                {% if church.id == attendance.local_church.id %}selected{% endif %}>{{ church.local_church_name.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row w-100 justify-content-between">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center" >
+                                    <div class="form-group">
+                                        <label for="church_service">Church Service</label>
+                                        <select class="form-control" name="church_service">
+                                            <option value="" required>Select Service</option>
+                                            {% for service in church_services %}
+                                                <option name="church_service"
+                                                        value="{{ service.id }}" {% if service.id == attendance.church_service.id %}selected{% endif %}>{{ service.short_name }} - {{ service.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <div class="">
+                                    <label for="date">Date</label>
+                                    <input type="date" class="form-control" id="date" name="date" value="{{ attendance.date|date:'Y-m-d' }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h5>Attendees</h5>
+                        <hr>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                                <label for="adult_male">Adult Male</label>
+                                <input type="number" class="form-control" id="adult_male" name="adult_male"
+                                       placeholder="Number of Adult Male" min="0" value="{{ attendance.adult_male }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="adult_female">Adult Female</label>
+                                <input type="number" class="form-control" id="adult_female" name="adult_female"
+                                       placeholder="Number of Adult Female" min="0"
+                                       value="{{ attendance.adult_female }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="youth_male">Youth Male</label>
+                                <input type="number" class="form-control" id="youth_male" name="youth_male"
+                                       placeholder="Number of Youth Male" min="0" value="{{ attendance.youth_male }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="youth_female">Youth Female</label>
+                                <input type="number" class="form-control" id="youth_female" name="youth_female"
+                                       placeholder="Number of Youth Female" min="0"
+                                       value="{{ attendance.youth_female }}">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                                <label for="children_male">Children Male</label>
+                                <input type="number" class="form-control" id="children_male" name="children_male"
+                                       placeholder="Number of Children Male" min="0"
+                                       value="{{ attendance.children_male }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="children_female">Children Female</label>
+                                <input type="number" class="form-control" id="children_female" name="children_female"
+                                       placeholder="Number of Children Female" min="0"
+                                       value="{{ attendance.children_female }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="campus_male">Campus Male</label>
+                                <input type="number" class="form-control" id="campus_male" name="campus_male"
+                                       placeholder="Number of Campus Male" min="0" value="{{ attendance.campus_male }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="campus_female">Campus Female</label>
+                                <input type="number" class="form-control" id="campus_female" name="campus_female"
+                                       placeholder="Number of Campus Female" min="0"
+                                       value="{{ attendance.campus_female }}">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                                <label for="cau">CAU</label>
+                                <input type="number" class="form-control" id="cau" name="cau"
+                                       placeholder="Number of CAU" min="0" value="{{ attendance.cau }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="visitor">Visitor</label>
+                                <input type="number" class="form-control" id="visitor" name="visitor"
+                                       placeholder="Number of Visitor" min="0" value="{{ attendance.visitor }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="conv">Conv</label>
+                                <input type="number" class="form-control" id="conv" name="conv"
+                                       placeholder="Number of Conv" min="0" value="{{ attendance.conv }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="ypf_male">YPF Male</label>
+                                <input type="number" class="form-control" id="ypf_male" name="ypf_male"
+                                    placeholder="Number of YPF Male" min="0" value="{{ attendance.ypf_male }}">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                                <label for="ypf_female">YPF Female</label>
+                                <input type="number" class="form-control" id="ypf_female" name="ypf_female"
+                                    placeholder="Number of YPF Female" min="0" value="{{ attendance.ypf_female }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="zoom">Zoom</label>
+                                <input type="number" class="form-control" id="zoom" name="zoom"
+                                    placeholder="Number of Zoom" min="0" value="{{ attendance.zoom }}">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="youtube">Youtube</label>
+                                <input type="number" class="form-control" id="youtube" name="youtube"
+                                    placeholder="Number of Youtube" min="0" value="{{ attendance.youtube }}">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="">Comment</label>
+                            <textarea class="form-control" name="comment" rows="3">{{ attendance.comment }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

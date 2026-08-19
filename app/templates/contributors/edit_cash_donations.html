@@ -1,0 +1,152 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% block extrastyle %}
+{% endblock %}
+{% block content %}
+    {% include 'income/components/source--modal.html' %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <h5>Donation</h5>
+
+                </div>
+                <div class="card-body">
+                    <h5>Edit Offerings - CAD</h5>
+                    <hr>
+                    <form action="{% url 'cash-donation' %}" method="post">
+                        {% include 'partials/_messages.html' %}
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-4 mt-4 mb-4 float-right">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input p-2" type="checkbox" role="switch" id="toggleSwitch"
+                                           name="toggleSwitch">
+                                    <label class="form-check-label" for="toggleSwitch">Miscellaneous Donor</label>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4 mt-4 mb-4 float-right">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input p-2" type="checkbox" role="switch"
+                                           id="anonymous_donor" name="anonymous_donor">
+                                    <label class="form-check-label" for="anonymous_donor">Anonymous Donor</label>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4 mt-4 mb-4 float-right">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input p-2" type="checkbox" role="switch"
+                                           id="specialToggleSwitch"
+                                           name="specialToggleSwitch">
+                                    <label class="form-check-label" for="specialToggleSwitch">Special
+                                        Contribution</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="local_church">Church</label>
+                                <select class="form-control" name="local_church" required>
+                                    <option value="{{ values.local_church.id }}">{{ values.local_church.local_church_name.title }}</option>
+                                    {% for local_church in local_churches %}
+                                        <option value="{{ local_church.id }}" {% if local_church in request.user.pastor_churches.all %}selected{% endif %}>
+                                            {{ local_church.local_church_name.title }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6" id="donation_name_list">
+                                <label for="donor">Donor</label>
+                                <select class="select2" id="donorSelect" name="donor" required>
+                                    <option value="">Select donor</option>
+                                    {% for user in users %}
+                                        <option name="donor"
+                                                value="{{ user.id }}">{{ user.full_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6" id="miscellaneousUserRow" style="display: none;">
+                                <label for="">Miscellaneous Donor</label>
+                                <input type="text" class="form-control" id="miscellaneous" name="miscellaneous"
+                                       placeholder="Name">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="">Donation Date</label>
+                                <input type="date" class="form-control" value="{{ values.deposited_date | date:'Y-m-d' }}" name="donation_date" id="donation_date">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="amount">Amount</label>
+                                <input type="text" class="form-control" name="amount" value="{{ values.amount }}">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+{% block extra_js %}
+    <script>
+        $(document).ready(function () {
+            var now_1 = new Date();
+            var day_1 = ("0" + now_1.getDate()).slice(-2);
+            var month_1 = ("0" + (now_1.getMonth() + 1)).slice(-2);
+            var today_1 = now_1.getFullYear() + "-" + (month_1) + "-" + (day_1);
+            document.getElementById("donation_date").value = today_1
+            $('.select2').select2({
+                placeholder: 'Select a donor'
+            });
+
+            var toggleSwitch = $('#toggleSwitch');
+            var miscellaneousUserRow = $('#miscellaneousUserRow');
+            var donationList = $("#donation_name_list")
+            // Initial state
+            var donorSelect = $('#donorSelect');
+            var miscellaneousUser = $('#miscellaneous');
+            if (toggleSwitch.prop('checked')) {
+                miscellaneousUserRow.show();
+                donationList.hide();
+                donorSelect.prop('required', false);
+                miscellaneousUser.prop('required', true);
+            } else {
+                miscellaneousUserRow.hide();
+                donationList.show();
+                donorSelect.prop('required', true);
+                miscellaneousUser.prop('required', false);
+            }
+
+            // Toggle event
+            toggleSwitch.change(function () {
+                if ($(this).prop('checked')) {
+                    miscellaneousUserRow.show();
+                    donationList.hide();
+                    donorSelect.prop('required', false);
+                    miscellaneousUser.prop('required', true);
+                } else {
+                    miscellaneousUserRow.hide();
+                    donationList.show();
+                    donorSelect.prop('required', true);
+                    miscellaneousUser.prop('required', false);
+                }
+            });
+
+            var anonymous = $('#anonymous_donor');
+            anonymous.change(function () {
+                if ($(this).prop('checked')) {
+                    donationList.hide();
+                    donorSelect.prop('required', false);
+                    toggleSwitch.prop('disabled', true);
+                } else {
+                    toggleSwitch.prop('disabled', false);
+                    donationList.show();
+                    donorSelect.prop('required', false);
+                }
+            })
+
+        });
+    </script>
+{% endblock extra_js %}

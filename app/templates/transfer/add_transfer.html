@@ -1,0 +1,112 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Add Interbank Transfer</h5>
+            </div>
+            <div class="card-body">
+                <form action="{% url 'add-transfer' %}" method="post">
+                    {% csrf_token %}
+                    {% include 'partials/_messages.html' %}
+
+                    <!-- Transfer Details -->
+                    <div class="form-group">
+                        <label for="type">Type of Transfer</label>
+                        <select name="type" id="type" class="form-control" required>
+                            <option value="" disabled selected>Select transfer type</option>
+                            <option value="Received">Received</option>
+                            <option value="Sent">Sent</option>
+                        </select>
+                        <small id="typeHelp" class="form-text text-muted">
+                            Select 'Received' if funds are incoming, 'Sent' if funds are outgoing.
+                        </small>
+                    </div>
+
+                    <!-- Region and Account Information -->
+                    <div class="form-group">
+                        <label for="region_id">Region</label>
+                        <select name="region_id" id="region_id" class="form-control" required>
+                            <option value="" disabled selected>Select region</option>
+                            {% for region in all_regions %}
+                                <option value="{{ region.id }}">{{ region.name|title }}</option>
+                            {% endfor %}
+                        </select>
+                        <small id="regionHelp" class="form-text text-muted">
+                            Choose the region associated with this transfer.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="account">Account Number</label>
+                        <select name="account" id="account" class="form-control" required>
+                            <option value="" disabled selected>Select account</option>
+                            {% for account in accounts %}
+                                {% if account.account_number != '000-000000' %}
+                                    <option value="{{ account.id }}">{{ account.account_name }} ({{ account.account_number }})</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <small id="accountHelp" class="form-text text-muted">
+                            Select the account number for this transaction.
+                        </small>
+                    </div>
+
+                    <!-- Transfer Date and Amount -->
+                    <div class="form-group">
+                        <label for="transfer_date">Date of Transfer</label>
+                        <input type="date" class="form-control" name="transfer_date" id="transfer_date" required>
+                        <small id="dateHelp" class="form-text text-muted">
+                            Specify the date when the transfer was made.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Amount</label>
+                        <input type="number" class="form-control" name="amount" id="amount" placeholder="Enter amount" step="0.01" min="0" required>
+                        <small id="amountHelp" class="form-text text-muted">
+                            Enter the transfer amount in CAD.
+                        </small>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" name="description" id="description" rows="3" placeholder="Enter description"></textarea>
+                        <small id="descriptionHelp" class="form-text text-muted">
+                            Provide additional details or notes about the transfer.
+                        </small>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to handle dynamic help text -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.getElementById('type');
+        const regionHelp = document.getElementById('regionHelp');
+
+        typeSelect.addEventListener('change', function() {
+            if (typeSelect.value === 'Sent') {
+                regionHelp.textContent = 'Select the region to which the transfer was sent.';
+            } else if (typeSelect.value === 'Received') {
+                regionHelp.textContent = 'Select the region from which the transfer was received.';
+            } else {
+                regionHelp.textContent = 'Choose the region associated with this transfer.';
+            }
+        });
+    });
+</script>
+{% endblock content %}

@@ -1,0 +1,28 @@
+{% load static %}
+
+<!-- Required Js -->
+<script>
+  window.Userback = window.Userback || {};
+  Userback.access_token = 'A-ZIwzaq3gGs6ZzVsAQiNoQogLP61ARe5EvdlAjbSVSvyqul6vGK';
+  // identify your logged-in users (optional)
+  Userback.user_data = {
+    id: "123456", // example data
+    info: {
+      name: "someone", // example data
+      email: "someone@example.com" // example data
+    }
+  };
+  (function(d) {
+    var s = d.createElement('script');s.async = true;s.src = 'https://static.userback.io/widget/v1.js';(d.head || d.body).appendChild(s);
+  })(document);
+</script>
+<script src="{% static 'js/vendor-all.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/pcoded.min.js' %}"></script>
+<script src="{% static 'js/dark-mode.js' %}"></script>
+<script src="{% static 'plugins/sweetalert2/js/sweetalert2@11.js' %}"></script>
+<script src="{% static 'plugins/datatable/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/select2/js/select2.min.js' %}"></script>
+<script src="{% static 'js/moment.min.js' %}"></script>
+<script src="{% static 'plugins/datetime_picker/js/daterangepicker.min.js' %}"></script>
+<script src="{% static 'js/main.js' %}"></script>

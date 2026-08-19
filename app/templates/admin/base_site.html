@@ -1,0 +1,21 @@
+{% extends 'admin/base.html' %} 
+{%load static%} 
+{% block branding %}
+
+<h1 id="head">
+  <img src="{% static 'img/logo.png' %}" width="55" height="55" />
+</h1>
+    <h1 style="text-transform: uppercase">DCLM Canada <br>Church Management System</h1>
+
+{% endblock %} {% block extrastyle%}
+
+<link rel="stylesheet" href="{% static 'css/adminstyle.css'%}" />
+    <style>
+        h1,h2,h3,h4,h5,h6 {
+            text-transform: capitalize;
+        }
+        a {
+            text-transform: capitalize;
+        }
+    </style>
+{%endblock %}

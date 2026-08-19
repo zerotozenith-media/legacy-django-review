@@ -1,0 +1,178 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+    {% include 'income/components/source--modal.html' %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <h5>Donation</h5>
+                </div>
+                <div class="card-body">
+                    <h5>Edit Offering - {{ currency }}</h5>
+                    <hr>
+                    <form action="{% url 'offerings' contribution.id contribution.type currency %}" method="post">
+                        {% include 'partials/_messages.html' %}
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <!-- Toggle for Miscellaneous Donor -->
+                            <div class="form-group col-md-4 mt-4 mb-4 float-right">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input p-2" type="checkbox" role="switch"
+                                           id="toggleSwitch"
+                                           name="toggleSwitch"
+                                           value="on"
+                                           {% if type == "Miscellaneous" %}checked{% endif %}>
+                                    <label class="form-check-label" for="toggleSwitch">Miscellaneous Donor</label>
+                                </div>
+                            </div>
+                            <!-- Toggle for Anonymous Donor -->
+                            <div class="form-group col-md-4 mt-4 mb-4 float-right">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input p-2" type="checkbox" role="switch"
+                                           id="anonymous_donor"
+                                           name="anonymous_donor"
+                                           value="on"
+                                           {% if type == "Anonymous" %}checked{% endif %}>
+                                    <label class="form-check-label" for="anonymous_donor">Anonymous Donor</label>
+                                </div>
+                            </div>
+                            <!-- Toggle for Special Contribution -->
+                            <div class="form-group col-md-4 mt-4 mb-4 float-right">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input p-2" type="checkbox" role="switch"
+                                           id="specialToggleSwitch"
+                                           name="specialToggleSwitch"
+                                           value="on"
+                                           {% if contribution.special_contribution %}checked{% endif %}>
+                                    <label class="form-check-label" for="specialToggleSwitch">Special Contribution</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Local Church Selection -->
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="donor">Local Churches</label>
+                                <select class="form-control" id="local_church" name="local_church" required>
+                                    <option value="">Select local church</option>
+                                    {% for church in local_churches %}
+                                        <option value="{{ church.id }}"
+                                                {% if church.id == contribution.local_church_id %}selected{% endif %}>
+                                            {{ church.local_church_name.title }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- Donor Selection -->
+                            <div class="form-group col-md-6" id="donation_name_list">
+                                <label for="donor">Donor</label>
+                                <select class="select2" id="donorSelect" name="donor" required>
+                                    <option value="">Select donor</option>
+                                    {% for user in users %}
+                                        <option value="{{ user.id }}"
+                                                {% if user.id == contribution.contributor.id %}selected{% endif %}>
+                                            {{ user.full_name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- Miscellaneous Donor -->
+                            <div class="form-group col-md-6" id="miscellaneousUserRow" style="display: none;">
+                                <label for="">Miscellaneous Donor</label>
+                                <input type="text" class="form-control" id="miscellaneous" name="miscellaneous"
+                                       placeholder="Name"
+                                       value="{{ contribution.contributor.full_name }}">
+                            </div>
+                            <!-- Donation Date -->
+                            <div class="form-group col-md-6">
+                                <label for="">Donation Date</label>
+                                <input type="date" class="form-control" name="donation_date" id="donation_date"
+                                       value="{{ contribution.deposited_date|date:'Y-m-d' }}">
+                            </div>
+                        </div>
+                        <!-- Amount -->
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="">Amount</label>
+                                <input type="number" class="form-control" name="amount" placeholder="Amount" required
+                                       value="{{ contribution.amount|floatformat:2 }}" min="0" step="0.01">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_js %}
+    <script>
+        $(document).ready(function () {
+    $('.select2').select2({
+        placeholder: 'Select a donor'
+    });
+
+    var toggleSwitch = $('#toggleSwitch');
+    var anonymousToggle = $('#anonymous_donor');
+    var miscellaneousUserRow = $('#miscellaneousUserRow');
+    var donationList = $("#donation_name_list");
+    var donorSelect = $('#donorSelect');
+    var miscellaneousUser = $('#miscellaneous');
+
+    // Initial state for Miscellaneous Donor
+    if (toggleSwitch.prop('checked')) {
+        miscellaneousUserRow.show();
+        donationList.hide();
+        donorSelect.prop('required', false);
+        miscellaneousUser.prop('required', true);
+    } else {
+        miscellaneousUserRow.hide();
+        donationList.show();
+        donorSelect.prop('required', true);
+        miscellaneousUser.prop('required', false);
+    }
+
+    // Toggle event for Miscellaneous Donor
+    toggleSwitch.change(function () {
+        if ($(this).prop('checked')) {
+            miscellaneousUserRow.show();
+            donationList.hide();
+            donorSelect.prop('required', false);
+            miscellaneousUser.prop('required', true);
+        } else {
+            miscellaneousUserRow.hide();
+            donationList.show();
+            donorSelect.prop('required', true);
+            miscellaneousUser.prop('required', false);
+        }
+    });
+
+    // Initial state for Anonymous Donor
+    if (anonymousToggle.prop('checked')) {
+        donationList.hide();
+        donorSelect.prop('required', false);
+        toggleSwitch.prop('disabled', true);
+        miscellaneousUserRow.hide();
+    }
+
+    // Toggle event for Anonymous Donor
+    anonymousToggle.change(function () {
+        if ($(this).prop('checked')) {
+            donationList.hide();
+            donorSelect.prop('required', false);
+            toggleSwitch.prop('disabled', true);
+            miscellaneousUserRow.hide();
+        } else {
+            donationList.show();
+            donorSelect.prop('required', true);
+            toggleSwitch.prop('disabled', false);
+        }
+    });
+});
+
+    </script>
+{% endblock extra_js %}

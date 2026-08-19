@@ -1,0 +1,55 @@
+{% extends 'layouts/base-auth.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="auth-wrapper">
+    <div class="auth-content">
+        <div class="auth-bg">
+            <span class="r"></span>
+            <span class="r s"></span>
+            <span class="r s"></span>
+            <span class="r"></span>
+        </div>
+        <div class="card">
+            <div class="card-body text-center">
+
+                <h3 class="mb-4">DCLM Canada</h3>
+
+                <span class="mb-0 text-muted">
+                    Login
+                </span>
+
+                <br />
+                <br />
+
+                <form role="form" method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+
+                    {% include 'partials/_messages.html' %}
+                    <div class="input-group mb-3">
+                        <input type="text" name="email" placeholder="Email" class="form-control" value="{{fieldValues.email}}" required id="emailField">
+                    </div>
+
+                    <div class="input-group mb-4">
+                        <input type="password" name="password" placeholder="Password" class="form-control" required id="passwordField">
+                    </div>
+
+                    <button type="submit" name="login" class="btn btn-primary shadow-2 mb-4">Login</button>
+
+                </form>
+
+                <br />
+
+
+                <div class="mx-2">
+                    <span class="mx-1">Forgot Password? <a href="{% url 'request-password' %}" class="">Reset Password</a> </span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock content %}

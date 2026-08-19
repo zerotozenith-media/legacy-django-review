@@ -1,0 +1,165 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% block extrastyle %}
+<style>
+    .pro_cols {
+        over-flow: break-word;
+        white-space: normal;
+        height: auto;
+        background-color: #16365e !important;
+        }
+       .col_bg {
+       background-color: #16365e !important;
+       }
+</style>
+{% endblock extrastyle %}
+
+{% block content %}
+{% include 'attendance/tabs.html' %}
+{% include 'partials/_messages.html' %}
+
+<div class="row">
+    <div class="container col-xl-12">
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Projections</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action=".">
+                    <div class="row p-3">
+                        <!-- Region Selection -->
+                        <div class="col-md-4 mt-2">
+                            {% if request.user.role == 3 or request.user.is_staff %}
+                                <label for="region" class="form-label fw-bold">Select Region</label>
+                                <select name="region" id="region" class="form-control" onchange="this.form.submit()">
+                                    <option value="">All Regions</option>
+                                    {% for region in region_list %}
+                                    <option value="{{ region.id }}" {% if region.id == selected_region %}selected{% endif %}>
+                                        {{ region.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <label for="region" class="form-label fw-bold">Region</label>
+                                <input type="text" id="region" class="form-control" value="{{ user.local_church.region.name }}" readonly>
+                            {% endif %}
+                        </div>
+
+                        <!-- Month Selection -->
+                        <div class="col-md-4 mt-2">
+                            <label for="month" class="form-label fw-bold">Select Month</label>
+                            <select name="month" id="month" class="form-control" onchange="this.form.submit()">
+                                {% for month in months %}
+                                <option value="{{ month.value }}" {% if month.value == current_month %}selected{% endif %}>
+                                    {{ month.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="table-responsive mt-2">
+                    <form id="report-form" method="post" action="">
+                        {% csrf_token %}
+                        <div class="table-responsive p-3">
+                               {% for month in months %}
+                                {% if month.value == current_month %}
+
+                                <h5 class="fw-bold mb-0 p-1">{{ month.name }} - {{ year }}</h5>
+
+                               {% endif %}
+                                {% endfor %}
+                            <table class="table table-hover shadow-sm table-bordered align-middle" id="projections_datatable">
+                                <thead class="table-dark">
+                                    <tr >
+                                        <th class="col_bg"><div class="pro_cols">Region</div></th>
+                                        <th class="col_bg"><div class="pro_cols">Add Attendance for Each Sunday in the Month. Divide by Number of Weeks.</div></th>
+                                        <th class="col_bg"><div class="pro_cols">Discuss with Members and come up with a Target for the Month's Global Crusade. Plan Publicity Accordingly to Achieve Target</div></th>
+                                        <th class="col_bg"><div class="pro_cols">Sunday Attendance of Crusade</div></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-body">
+                                    {% for projection in projections %}
+                                    <tr data-id="{{ projection.region.id }}">
+                                        <td>{{ projection.region.name }}</td>
+                                        <td>
+                                            <input type="number" class="form-control editable" name="att_by_weeks" value="{{ projection.att_by_weeks }}">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control editable" name="att_target_for_month" value="{{ projection.att_target_for_month }}">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control editable" name="att_sunday_crusade" value="{{ projection.att_sunday_crusade }}">
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% if request.user.role != 4 %}
+<script>
+    $(document).ready(function () {
+        $('#projections_datatable').DataTable({
+            "paging": true,            // Enable pagination
+            "lengthChange": false,      // Allow user to change the number of rows per page
+            "pageLength": 10,
+             "searching": false,
+        });
+    });
+</script>
+{% endif %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const csrfToken = "{{ csrf_token }}"; // Django CSRF token
+
+        // Handle blur event for text inputs
+        document.querySelectorAll(".form-control").forEach(function (editableField) {
+            editableField.addEventListener("blur", function (event) {
+                const row = event.target.closest("tr"); // Get the closest row
+                const fieldId = row.dataset.id; // Get the row's dataset ID
+                const fieldName = event.target.name; // Use the 'name' attribute from the input/textarea
+                const updatedValue = event.target.value.trim(); // Get the input's current value
+                const month = document.getElementById("month").value; // Get selected month
+
+                console.log("CSRF Token:", csrfToken);
+
+                // Send the updated data to the server
+                fetch("{% url 'gck_projections' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken,
+                    },
+                    body: JSON.stringify({
+                        id: fieldId,
+                        field_name: fieldName,
+                        updated_value: updatedValue,
+                        month: month,
+                        action: "projections",
+                    }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.status === "success") {
+                            console.log(`Field "${fieldName}" updated successfully`, data);
+                        } else {
+                            console.log(`Failed to update field "${fieldName}"`, data);
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(`Error updating field "${fieldName}"`, error);
+                    });
+            });
+        });
+    });
+</script>
+{% endblock content %}

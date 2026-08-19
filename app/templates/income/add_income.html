@@ -1,0 +1,81 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block content %}
+    {% include 'income/components/source--modal.html' %}
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Church Income</h5>
+                </div>
+                <div class="card-body">
+                    <h5>Add Church Income</h5>
+                    <hr>
+                    <form action="{% url 'add-income' %}" method="post">
+                        {% include 'partials/_messages.html' %}
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6" style="margin-top: 0.75rem">
+                                <label for="church">Church</label>
+                                <select class="form-control" name="local_church" required>
+                                    <option value="">Select a local church</option>
+                                    {% for church in local_churches %}
+                                        <option name="church" value="{{ church.id }}" {% if church in request.user.pastor_churches.all %}selected{% endif %}>{{ church.local_church_name.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label for="exampleFormControlSelect1">Sources</label>
+                                        <button type="button" id="addSourceButton" class="btn mr-0 "><span><i
+                                                class="fa fa-plus"></i> Add Source</span></button>
+                                    </div>
+                                    <select class="form-control" name="source">
+                                        <option value="">Select a source</option>
+                                        {% for source in sources %}
+                                            <option name="source" data-user_id="{{ source.entry_by_id }}"
+                                                    value="{{ source.id }}">
+                                                {{ source.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                            </div>
+                            <div class="form-group col-md-6 d-none">
+                                <label for="account">Account Number</label>
+                                <select class="form-control" name="account">
+                                    {% for account in accounts %}
+                                        <option name="account"
+                                                value="{{ account.id }}">{{ account.account_number }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6" style="padding-top: 10px">
+                                <label for="">Date of Income</label>
+                                <input type="date" class="form-control" name="income_date">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="">Amount</label>
+                                <input type="number" class="form-control" name="amount" placeholder="Amount" step="0.01" min="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="">Description</label>
+                                <textarea class="form-control" name="description" rows="3"></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

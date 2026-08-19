@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donation Receipt</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        h1, h2 { text-align: center; }
+        .details, .footer { margin-bottom: 20px; text-align: center; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .table th, .table td { border: 1px solid black; padding: 10px; text-align: left; }
+        .total { margin-top: 20px; text-align: right; font-size: 1.2em; font-weight: bold; }
+        .logo { width: 40%; height: auto; display: block; margin: auto; }
+        .footer { background: #f4f4f4; margin-top: 20px; padding: 15px; font-size: 0.9em; text-align: center; border-top: 2px solid #ddd; }
+    </style>
+</head>
+<body>
+    <img src="data:image/jpg;base64,{{ report_logo }}" alt="Organization Logo" class="logo">
+
+    <h1>Official Donation Receipt</h1>
+    <p class="details">Date Issued: <strong>{{ receipt_issue_date }}</strong></p>
+    <p class="details">Donor: <strong>{{ donor.first_name }} {{ donor.last_name }}</strong></p>
+    <p class="details">Email: <strong>{{ donor.email }}</strong></p>
+    <p class="details">Address: <strong>{{ donor.address }}</strong></p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Item</th>
+                <th>Description</th>
+                <th>Serial No.</th>
+                <th>Estimated Value (CAD)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for donation in donations %}
+            <tr>
+                <td>{{ donation.donation_date }}</td>
+                <td>{{ donation.donation_item }}</td>
+                <td>{{ donation.description|default:"N/A" }}</td>
+                <td>{{ donation.serial_no|default:"N/A" }}</td>
+                <td>${{ donation.estimated_value }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total">
+        <p>TOTAL DONATION VALUE: <strong>${{ total_value }} CAD</strong></p>
+    </div>
+
+    <!-- Footer Section -->
+    <div class="footer">
+        <p><strong>Deeper Christian Life Ministry, Canada</strong></p>
+        <p>10672-62 Avenue, Edmonton, Alberta T6H 1M8</p>
+        <p>Phone: <a href="tel:18887101517">1-888-710-1517</a> | Email: <a href="mailto:admin@deeperlife.ca">admin@deeperlife.ca</a></p>
+        <p>Website: <a href="https://www.deeperlife.ca" target="_blank">www.deeperlife.ca</a></p>
+    </div>
+</body>
+</html>

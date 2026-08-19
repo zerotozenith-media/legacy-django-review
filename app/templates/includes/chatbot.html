@@ -1,0 +1,127 @@
+<div>
+    <!-- Chat icon -->
+    <div class="chat-icon" onclick="toggleChatbot()">💬</div>
+
+    <!-- Chatbot iframe container with header -->
+    <div class="iframe-container" id="iframeContainer">
+        <div class="iframe-header">
+            <span>Chat with us</span>
+            <button onclick="toggleChatbot()">✖</button>
+        </div>
+        <iframe
+                src="https://ambitious-sea-0116b3d0f.6.azurestaticapps.net/"
+                id="chatIframe"
+                title="Chatbot"
+                frameborder="0"
+                style="width: 100%; height: calc(100% - 40px);">
+        </iframe>
+    </div>
+
+    <style>
+    .chat-icon {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background-color: #16365e;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        cursor: pointer;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease;
+        z-index: 1000;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 rgba(0, 123, 255, 0.7);
+        }
+        50% {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 123, 255, 0.4);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 rgba(0, 123, 255, 0.7);
+        }
+    }
+
+    .chat-icon:hover {
+        background-color: #16365e;
+        animation: none;
+    }
+
+    .iframe-container {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 400px;
+        height: 500px;
+        display: none;
+        z-index: 999;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+        border-radius: 8px;
+        overflow: hidden;
+        transform: translateY(20px);
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        background: white;
+    }
+
+    .iframe-container.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .iframe-header {
+        background: #16365e;
+        color: white;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .iframe-header span {
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .iframe-header button {
+        background: transparent;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .iframe-header button:hover {
+        color: #ddd;
+    }
+
+    </style>
+
+    <script>
+    function toggleChatbot() {
+        const iframeContainer = document.getElementById('iframeContainer');
+        const isActive = iframeContainer.classList.contains('active');
+
+        iframeContainer.classList.toggle('active', !isActive);
+
+        if (!isActive) {
+            const iframe = document.getElementById('chatIframe');
+            iframe.contentWindow.location.reload();
+        }
+    }
+
+    </script>
+</div>

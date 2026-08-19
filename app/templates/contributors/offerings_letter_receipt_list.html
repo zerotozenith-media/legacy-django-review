@@ -1,0 +1,222 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% block extrastyle %}
+    <style>
+        table.dataTable tbody th, table.dataTable tbody td {
+            vertical-align: middle;
+        }
+    </style>
+{% endblock extrastyle %}
+{% block content %}
+    <div class="row">
+        <div class="col-xl-12 col-md-6">
+            <div class="card-header d-flex justify-content-between">
+                <h5>Offerings CAD Official Receipts</h5>
+                <a href="{% url 'receipts_generation_page' %}" class="btn btn-primary">All Receipts Generation Page</a>
+            </div>
+
+            <div class="card-block px-0 py-3 m-2">
+                <div class="row mb-3">
+                    <div class="ml-auto">
+                        <div class="d-flex align-items-baseline">
+                            <select class="form-control mr-2" name="local_church" id="local_church_id">
+                                <option value="">Select Local Church</option>
+                                <option value="all">ALL</option>
+                                {% for local_church in local_churches %}
+                                    <option name="local_church" value="{{ local_church.id }}">{{ local_church.local_church_name.title }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-secondary mr-2" id="btn-send-receipt">Send Selected</button>
+                            <button class="btn btn-secondary mr-2" id="btn-preview-receipt">Preview Selected</button>
+                            <button class="btn btn-secondary mr-2" id="btn-download-selected-receipt">Download Selected Receipts</button>
+                            <button class="btn btn-secondary" id="btn-download-all-receipt" onclick="downloadAll()">Download ALL Receipts</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="offerings_can_receipt_letter_datatable">
+                        <thead>
+                        <tr>
+                            <th style="vertical-align: middle; text-align: center">ID</th>
+                            <th style="vertical-align: middle; text-align: center; padding-bottom: 29px">
+                                <input type="checkbox" class="form-check-input checkbox-all">
+                            </th>
+                            <th>Contributor's Name</th>
+                            <th>Email</th>
+                            <th>Preview</th>
+                            <th>Send to Donor</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for key, val in contributors.items %}
+                            <tr>
+                                <td style="vertical-align: middle; text-align: center">{{ val.id }}</td>
+                                <td style="text-align: center">
+                                    <input type="checkbox" name="contributor_id" value="{{ val.id }}" style="margin-top:-6px" class="form-check-input checkbox-row">
+                                </td>
+                                <td>
+                                    <h6 class="m-0">{{ val.full_name }}</h6>
+                                </td>
+                                <td>
+                                    <h6 class="m-0">{{ val.email }}</h6>
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline-primary btn-preview"
+                                            onclick="previewOfferingsLetter('{{ key }}')">Preview
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline-success btn-send"
+                                            onclick="sendOfferingsLetter('{{ key }}')">Send
+                                    </button>
+                                </td>
+
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewModalLabel">Preview Report</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Your content for preview goes here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            var table = $('#offerings_can_receipt_letter_datatable').DataTable();
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var local_churchParam = urlParams.get('local_church');
+            if (local_churchParam && local_churchParam !== 'all' && local_churchParam !== '') {
+                $('#local_church_id').val(local_churchParam);
+                var downloadButton = document.getElementById('btn-download-all-receipt');
+                downloadButton.innerHTML = 'Download ALL Receipts From {{local_church_name}} local_church';
+            }
+
+            $('select[name="local_church"]').change(function () {
+                var selectedlocal_church = $(this).val();
+                var currentUrl = '/contributor/offerings_can_letter/?year={{ report_year }}';
+                var newUrl = currentUrl + '&' + 'local_church=' + selectedlocal_church;
+                window.location.href = newUrl;
+            });
+
+            $('#btn-send-receipt').on('click', function () {
+                var selectedContributors = [];
+                table.$('input[name="contributor_id"]:checked').each(function () {
+                    selectedContributors.push($(this).val());
+                });
+                console.log(selectedContributors)
+                if (selectedContributors.length > 0) {
+                    var send_url = '/contributor/send_offerings_can_letter/' + selectedContributors.join(' ') + `?year={{ report_year }}`;
+                    window.location.href = send_url;
+                } else {
+                    // No checkboxes selected, show Swal error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Please select at least one Contributor.',
+                    });
+                }
+            });
+
+            $('#btn-preview-receipt').on('click', function () {
+                var selectedContributors = $('input[name="contributor_id"]:checked').map(function () {
+                    return $(this).val();
+                }).get();
+
+                if (selectedContributors.length > 0) {
+                    var send_url = '/contributor/preview_offerings_can_letter/' + selectedContributors.join(' ') + `?year={{ report_year }}`;
+                    window.location.href = send_url;
+                } else {
+                    // No checkboxes selected, show Swal error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Please select at least one Contributor.',
+                    });
+                }
+            });
+
+            $('#btn-download-selected-receipt').on('click', function () {
+                var selectedContributors = [];
+                $('.checkbox-row:checked').each(function () {
+                    var rowIndex = $(this).closest('tr').index();
+                    var rowData = table.row(rowIndex).data();
+
+                    if (rowData && rowData[1]) {
+                        var contributorId = parseInt(rowData[1]);
+                        selectedContributors.push(contributorId);
+                    }
+                });
+
+                if (selectedContributors.length > 0) {
+                    var send_url = '/contributor/download_offerings_can_letter/' + selectedContributors.join(' ') + `?year={{ report_year }}`;
+                    window.location.href = send_url;
+                } else {
+                    // No checkboxes selected, show Swal error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Please select at least one Contributor.',
+                    });
+                }
+            });
+
+            // Checkbox select/deselect all
+            $('#offerings_can_receipt_letter_datatable').on('change', '.checkbox-all', function () {
+                var isChecked = $(this).prop('checked');
+                $('.checkbox-row').prop('checked', isChecked);
+                table.rows().nodes().to$().find('.checkbox-row').prop('checked', isChecked);
+            });
+
+            // Individual checkbox click
+            $('#offerings_can_receipt_letter_datatable').on('change', '.checkbox-row', function () {
+                $('.checkbox-all').prop('checked', false);
+            });
+        });
+
+        function sendOfferingsLetter(contributorKey) {
+            var send_url = '/contributor/send_offerings_can_letter/' + contributorKey + `?year={{ report_year }}`;
+            window.location.href = send_url;
+        }
+
+        function previewOfferingsLetter(contributorKey) {
+            var prev_url = '/contributor/preview_offerings_can_letter/' + contributorKey + `?year={{ report_year }}`;
+            window.location.href = prev_url;
+        }
+
+        function downloadAll() {
+            let downloadUrl = '/contributor/download_offerings_can_letter/' + 'all' + `?year={{ report_year }}`;
+            var local_churchValue = (new URLSearchParams(window.location.search)).get('local_church');
+            if(local_churchValue){
+                downloadUrl += ('&local_church=' + local_churchValue);
+            }
+            window.location.href = downloadUrl;
+        }
+
+    </script>
+
+
+{% endblock content %}

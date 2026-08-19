@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-4"></div>
+    <div class="col-md-4">
+        <div class="card mt-5">
+           
+            <div class="card-body">
+
+                <div class="card-title py-3">
+                    <h4>Invite Users</h4>
+                </div> 
+
+                <form action="{% url 'register' %}" method="post">
+                    {% csrf_token %}
+                    {% include 'partials/_messages.html' %}
+
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Email" id="emailField" class="form-control form-control-sm value" value="{{fieldValues.email}}">
+                    </div>
+                    <div class="emailFeedBackArea invalid_feedback" style="display:none">
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="text" name="first_name" placeholder="First Name" id="firstNameField" class="form-control form-control-sm value" value="{{fieldValues.first_name}}">
+                    </div>
+                    <div class="emailFeedBackArea invalid_feedback" style="display:none">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="text" name="last_name" placeholder="Last Name" id="lastNameField" class="form-control form-control-sm value" value="{{fieldValues.last_name}}">
+                    </div>
+                    <div class="emailFeedBackArea invalid_feedback" style="display:none">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="text" name="role" placeholder="Role" id="roleField" class="form-control form-control-sm value" value="{{fieldValues.role}}">
+                    </div>
+                    <div class="emailFeedBackArea invalid_feedback" style="display:none">
+                    </div>
+
+                    {% comment %} <input type="submit" value="Send Invitation" class="btn btn-block btn-primary submit-btn"> {% endcomment %}
+
+
+                    <div class="d-flex justify-content-between align-items-center">                 
+        
+                      </div>
+            
+                      <div class="text-center text-lg-start mt-4 pt-2">
+                        {% comment %} <button type="button" class="btn btn-primary btn-lg"
+                          style="padding-left: 2.5rem; padding-right: 2.5rem;">Login</button> {% endcomment %}
+                        
+                        <input type="submit" value="Register" class="btn btn-primary btn-lg"
+                        style="padding-left: 2.5rem; padding-right: 2.5rem;">
+
+
+                        <div class="container">
+                            <span class="text-lead lead"> Have an Account?</span> <a href="{% url 'login' %}" class="">Login</a><br>
+                      
+                            <span class="text-lead lead"> Forgot Password?</span> <a href="{% url 'request-password' %}" class="">Reset Password</a>
+                           </div>
+
+                        {% comment %} <p class="small fw-bold mt-2 pt-1 mb-0">Have an Account? <a href="{% url 'login' %}"
+                            class="link-danger">Login</a></p> {% endcomment %}
+                      </div>
+
+                </form>
+
+
+        </div>
+    </div>
+    </div>
+   
+</section>
+
+
+<script src="{% static 'js/register.js'%}"></script>
+{% endblock content %}

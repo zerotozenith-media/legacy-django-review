@@ -1,0 +1,127 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+
+{% block extrastyle %}
+<style>
+    /* Center align table text */
+    .table th, .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+
+    /* Hide unnecessary elements */
+    #go-back-arrow {
+        display: none !important;
+    }
+</style>
+{% endblock extrastyle %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Donation In Kind Official Receipts</h5>
+            </div>
+
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 ml-auto">
+                        <div class="d-flex align-items-center">
+                            <select class="form-control" name="local_church" id="local_church_id">
+                                <option value="">Select Church</option>
+                                <option value="all">ALL</option>
+                                {% for local_church in local_churches %}
+                                    <option value="{{ local_church.id }}">{{ local_church.local_church_name.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered table-hover" id="donation_in_kind_receipt_datatable">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Donor Name</th>
+                                <th>Email</th>
+                                <th>Local Church</th>
+                                <th>Total Donations</th>
+                                <th>Total Estimated Value</th>
+                                <th>Last Donation Date</th>
+                                <th>Tax Receipt Issued</th>
+                                <th>Last Tax Receipt Date</th>
+                                <th>Preview</th>
+                                <th>Send to Donor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for donor in donors %}
+                            <tr>
+                                <td>{{ donor.donor_id }}</td>
+                                <td>{{ donor.donor__first_name }} {{ donor.donor__last_name }}</td>
+                                <td>{{ donor.donor__email }}</td>
+                                <td>{{ donor.local_churches }}</td>
+                                <td>{{ donor.total_donations }}</td>
+                                <td>{{ donor.total_value }}</td>
+                                <td>{{ donor.last_donation_date }}</td>
+                                <td>
+                                    {% if donor.tax_receipt_issued %}
+                                        <span class="badge badge-success">Yes</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">No</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ donor.last_tax_receipt_date|default:"N/A" }}</td>
+                                <td>
+                                    <button class="btn btn-info btn-sm preview-receipt-btn"
+                                            onclick="generateReceipt('{% url 'donation_receipt_preview' donor.donor_id %}', '')">
+                                        Preview
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm"
+                                            onclick="generateReceipt('{% url 'donation_receipt_preview' donor.donor_id %}', 'send')">
+                                        Send</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script>
+        $(document).ready(function () {
+            var currentDate = new Date().getFullYear() - 1;
+            $('#report_year').val(currentDate);
+            var report_year = $('#report_year').val()
+        });
+
+        function generateReceipt(url, mode) {
+            Swal.fire({
+                title: `You're about to generate Donation In Kind Official Report`,
+                text: 'Are you sure?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Generate Receipt!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to the specified URL
+                    window.location.href = `${url}?mode=${mode}`;
+                }
+            });
+        }
+    </script>
+
+{% endblock content %}
