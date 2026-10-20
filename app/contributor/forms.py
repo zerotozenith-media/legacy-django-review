@@ -1,5 +1,5 @@
 from django import forms
-from django.utils.datetime_safe import date
+from datetime import date
 
 from contributor.helper import add_contribution
 from contributor.models import Contribution, MiscellaneousContribution

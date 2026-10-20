@@ -176,4 +176,9 @@ class SingleInteracContributionTests(TestCase):
         }
         response = self.client.post(SINGLE_INTERAC_URL, data)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, 'form', 'amount', 'The amount must be greater than zero.')
+        # Django 5.0 removed the old assertFormError(response, form_name, ...)
+        # signature. The form is now passed directly.
+        self.assertFormError(
+            response.context['form'], 'amount',
+            'The amount must be greater than zero.',
+        )
