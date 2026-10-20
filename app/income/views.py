@@ -17,6 +17,7 @@ from organization.utils import get_user_local_church
 from utils.helpers import get_user_regions, get_filtered_context
 from .forms import DonationInKindForm
 from .models import Source, Income, DonationInKind
+from .selectors import looks_like_contribution_source, selectable_sources
 from django.core.paginator import Paginator
 from django.template import loader
 from django.views import View
@@ -138,7 +139,7 @@ def index(request):
 # View to add a new income
 @login_required(login_url="/authentication/login")
 def add_income(request):
-    sources = Source.objects.all()
+    sources = selectable_sources()
     accounts = BankAccount.objects.all()
     user = request.user
     local_churches = get_user_local_church(user)
@@ -203,7 +204,7 @@ def add_income(request):
 @login_required(login_url="/authentication/login")
 def income_edit(request, id):
     income = Income.objects.get(pk=id)
-    sources = Source.objects.all()
+    sources = selectable_sources(current_source_id=income.source_id)
     user = request.user
     local_churches = get_user_local_church(user)
     context = {"income": income, "values": income, "sources": sources, "local_churches": local_churches}
@@ -304,7 +305,13 @@ class SourceView(View):
                 'name': name,
                 'type': 'Income',
                 'description': description,
-                'entry_by': request.user
+                'entry_by': request.user,
+                # A source named for tithe, offering or special contribution
+                # money is flagged on creation. That money is recorded on the
+                # Contributions screens and summed from there by the financial
+                # report, so Income rows against it would be counted twice.
+                # An administrator can untick this if the name is misleading.
+                'counted_via_contributions': looks_like_contribution_source(name),
             }
             Source.objects.create(**source)
             return JsonResponse({
@@ -558,7 +565,7 @@ def delete_donation(request, pk):
 
 @login_required(login_url="/authentication/login")
 def add_region_income(request):
-    sources = Source.objects.all()
+    sources = selectable_sources()
     accounts = BankAccount.objects.all()
     user = request.user
     regions = Region.objects.all()
@@ -623,7 +630,7 @@ def add_region_income(request):
 @login_required(login_url="/authentication/login")
 def region_income_edit(request, id):
     income = Income.objects.get(pk=id, region__isnull=False)
-    sources = Source.objects.all()
+    sources = selectable_sources(current_source_id=income.source_id)
     user = request.user
     regions = Region.objects.all()
 

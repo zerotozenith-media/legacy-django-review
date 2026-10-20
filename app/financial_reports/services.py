@@ -144,16 +144,18 @@ def _row(label, by_region, region_names):
     return {"label": label, "values": values, "total": sum(values, Decimal("0"))}
 
 
-# Source names that are actually tithe/offering/special-contribution and are
-# therefore sourced from Contribution models above, not from Income directly.
-# Adjust this list to match whatever Source.name values you decide to keep
-# (or stop creating Income rows for these sources altogether, so they can't
-# get double-counted).
-CONTRIBUTION_HANDLED_SOURCE_NAMES = {
-    "tithe & offering cad",
-    "tithe & offering usd",
-    "special contribution cad",
-}
+# Sources holding tithe, offering or special contribution money are summed
+# from the Contribution models above, so their Income rows must not be added
+# again here.
+#
+# This used to be a hardcoded set of lowercased names:
+#
+#     "tithe & offering cad", "tithe & offering usd", "special contribution cad"
+#
+# which could never match the source the seed command actually creates
+# ("Tithe and Offerings"), and could never match a name a user invented on the
+# Add Income form. It is now the Source.counted_via_contributions flag, so
+# renaming a source cannot silently reintroduce double counting.
 
 
 def build_expense_groups(category_type, expense_by_subcat, region_names):
@@ -224,14 +226,16 @@ def build_income_expenditure_summary(year, month=None):
     ]
 
     # ---- Remaining income rows ----
+    # Sources flagged counted_via_contributions are excluded at the database
+    # level, so money already counted from the Contribution models above is
+    # not added a second time.
     income_by_source = _income_totals_by_source_and_region(year, month)
-    other_sources = Source.objects.filter(type="Income").order_by("name")
+    other_sources = (
+        Source.objects.filter(type="Income")
+        .exclude(counted_via_contributions=True)
+        .order_by("name")
+    )
     for source in other_sources:
-        if (
-            source.name
-            and source.name.strip().lower() in CONTRIBUTION_HANDLED_SOURCE_NAMES
-        ):
-            continue
         income_rows.append(
             _row(source.name, income_by_source.get(source.id, {}), region_names)
         )

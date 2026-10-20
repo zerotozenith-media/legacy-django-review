@@ -4,6 +4,8 @@ from django.contrib import messages
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from contributor.decorators import contribution_access_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
 from django.shortcuts import redirect, get_object_or_404
@@ -25,6 +27,7 @@ from .helper import handle_uploaded_file, add_contribution, handle_uploaded_for_
 
 
 # View for handling cash donations
+@method_decorator(contribution_access_required, name="dispatch")
 class CashDonationView(View):
     def get(self, request):
         login_user = request.user
@@ -97,16 +100,19 @@ class CashDonationView(View):
         return redirect('cash-donation-list')
 
 
+@contribution_access_required
 def edit_cash_donations(request):
     return render(request, 'contributors/edit_cash_donations.html')
 
 
 
+@contribution_access_required
 def offerings_USD_edit(request):    
     return render(request, 'contributors/offerings_USD_edit.html')
 
 
 # View for handling USD offerings
+@method_decorator(contribution_access_required, name="dispatch")
 class OfferingsUSDView(View):
     def get(self, request):
         login_user = request.user
@@ -179,6 +185,7 @@ class OfferingsUSDView(View):
 
 
 # Function to list cash donations
+@contribution_access_required
 def cash_donation_list(request):
     user = request.user
     local_churches = get_user_local_church(user)
@@ -233,6 +240,7 @@ def cash_donation_list(request):
 
 
 # Function to list USD offerings
+@contribution_access_required
 def offerings_usd_list(request):
     user = request.user
     local_churches = get_user_local_church(user)
@@ -279,6 +287,7 @@ def offerings_usd_list(request):
 
 
 # Function to list Interac transfers
+@contribution_access_required
 def interac_transfer_list(request):
     user = request.user
     local_churches = get_user_local_church(user)
@@ -327,6 +336,7 @@ def interac_transfer_list(request):
 
 
 # Function to download a sample file for contributions
+@contribution_access_required
 def download_sample(request, type):
     # Create a new workbook and add a worksheet
     workbook = Workbook()
@@ -377,6 +387,7 @@ def download_sample(request, type):
 
 
 # Function to handle file uploads
+@contribution_access_required
 def upload_file(request):
     local_churches = get_user_local_church(request.user)
     type = TransactionType.INTEREC_E_TRANSFER.value
@@ -435,6 +446,7 @@ def bank_statement_importer(request):
 
 
 # Function to handle offerings uploads
+@contribution_access_required
 def offerings_uploader_view(request, type):
     login_in_user = request.user
     local_churches = get_user_local_church(login_in_user)
@@ -462,6 +474,7 @@ def offerings_uploader_view(request, type):
 
 
 # View for adding Interac contributions
+@method_decorator(contribution_access_required, name="dispatch")
 class InteracAddView(View):
     def get(self, request):
         login_in_user = request.user
@@ -497,6 +510,7 @@ class InteracAddView(View):
 
 
 # Function to calculate the total contribution for the current month
+@contribution_access_required
 def current_months_contribution(region_id=None, local_church=None):
     current_year = datetime.now().year
     current_month = datetime.now().month
@@ -534,6 +548,7 @@ def current_months_contribution(region_id=None, local_church=None):
 
 
 # Function to calculate the total contribution for the current year
+@contribution_access_required
 def current_year_contribution(region_id=None, local_church=None):
     current_year = datetime.now().year
 
@@ -569,6 +584,7 @@ def current_year_contribution(region_id=None, local_church=None):
     return total_contribution
 
 
+@method_decorator(contribution_access_required, name="dispatch")
 class SingleInteracContributionCreateView(LoginRequiredMixin, View):
     """View to handle creating a new Single Interac contribution."""
     template_name = "contributors/add_single_interac.html"
@@ -598,6 +614,7 @@ class SingleInteracContributionCreateView(LoginRequiredMixin, View):
         return render(request, self.template_name, {'form': form})
 
 
+@method_decorator(contribution_access_required, name="dispatch")
 class Offerings(View):
     def get(self, request, id, type, currency):
         login_user = request.user
@@ -767,6 +784,7 @@ class Offerings(View):
         return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))
 
 
+@method_decorator(contribution_access_required, name="dispatch")
 class ManageBankDonation(View):
     def get(self, request, id, type):
         login_in_user = request.user
@@ -849,6 +867,7 @@ class ManageBankDonation(View):
         return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))
 
 
+@method_decorator(contribution_access_required, name="dispatch")
 class ManageSingleInteracContributionCreateView(LoginRequiredMixin, View):
     """View to handle editing a Single Interac contribution."""
     template_name = "contributors/single_interac_edit.html"

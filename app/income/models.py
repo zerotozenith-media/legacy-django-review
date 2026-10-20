@@ -10,6 +10,18 @@ class Source(BaseModel):
     type = models.CharField(max_length=255, default="Income", null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     entry_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, related_name="source_entry")
+    counted_via_contributions = models.BooleanField(
+        default=False,
+        verbose_name="Already counted through Contributions",
+        help_text=(
+            "Tick this for tithe, offering and special contribution sources. "
+            "Money for these is recorded on the Contributions screens, so the "
+            "financial reports must not count Income rows against this source "
+            "as well, or the same money is counted twice. Ticking this hides "
+            "the source from the Add Income form and excludes it from the "
+            "income side of the Summary of Regions Accounts report."
+        ),
+    )
 
     def __str__(self):
         return self.name

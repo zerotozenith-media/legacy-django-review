@@ -23,6 +23,8 @@ from organization.models import LocalChurch
 import base64
 from core import settings
 from utils.send_emails import send_email
+from django.utils.decorators import method_decorator
+from contributor.decorators import receipt_access_required
 
 admin_sender = settings.DEFAULT_FROM_EMAIL
 
@@ -90,10 +92,12 @@ def contributors_info_dict(payment_type, local_church=None):
     return contribution_dict
 
 
+@receipt_access_required
 def receipts_index(request):
     return render(request, 'contributors/receipts_index.html')
 
 
+@receipt_access_required
 def offering_can_summary_report(request):
     local_churches = []
     if request.method == 'GET' and request.GET.get('local_church') and request.GET.get('local_church') != 'all':
@@ -133,6 +137,7 @@ def offering_can_summary_report(request):
         return render(request, "contributors/offerings_can_receipt_list.html", context)
 
 
+@receipt_access_required
 def prepare_offerings_summary_report_data(request):
     if request.GET.get('local_church') and request.GET.get('local_church') != 'all':
         selected_local_church_id = int(request.GET.get('local_church'))
@@ -162,10 +167,12 @@ def prepare_offerings_summary_report_data(request):
     return contribution_dict
 
 
+@receipt_access_required
 def generate_pdf_for_offerings_can_report(request):
     pass
 
 
+@receipt_access_required
 def offerings_can_letter_report(request):
     local_churches = []
     if request.user.is_staff or request.user.role == 3:
@@ -196,6 +203,7 @@ def offerings_can_letter_report(request):
     return render(request, "contributors/offerings_letter_receipt_list.html", context)
 
 
+@receipt_access_required
 def prepare_interac_summary_report_data(request):
     if request.GET.get('local_church') and request.GET.get('local_church') != 'all':
         selected_local_church_id = int(request.GET.get('local_church'))
@@ -223,6 +231,7 @@ def prepare_interac_summary_report_data(request):
     return contribution_dict
 
 
+@receipt_access_required
 def interac_summary_report(request):
     local_churches = []
     if request.user.is_staff or request.user.role == 3:
@@ -253,6 +262,7 @@ def interac_summary_report(request):
     return render(request, "contributors/interac_summary_receipt_list.html", context)
 
 
+@receipt_access_required
 def interac_letter_report(request):
     local_churches = []
     if request.user.is_staff or request.user.role == 3:
@@ -283,6 +293,7 @@ def interac_letter_report(request):
     return render(request, "contributors/interac_letter_receipt_list.html", context)
 
 
+@receipt_access_required
 def preview_offerings_summary_report(request, c_id=None):
     try:
         contributors = prepare_offerings_summary_report_data(request)
@@ -338,6 +349,7 @@ def preview_offerings_summary_report(request, c_id=None):
 
 
 
+@receipt_access_required
 def preview_interac_summary_report(request, c_id=None):
     try:
         contributors = prepare_interac_summary_report_data(request)
@@ -392,6 +404,7 @@ def preview_interac_summary_report(request, c_id=None):
         return redirect('interac_summary_report')
 
 
+@receipt_access_required
 def preview_offerings_letter_report(request, c_id=None):
     try:
         contributors = contributors_info_dict(TransactionType.OFFERINGS_CAN.value)
@@ -458,6 +471,7 @@ def preview_offerings_letter_report(request, c_id=None):
 
 
 
+@receipt_access_required
 def preview_interac_letter_report(request, c_id=None):
     try:
         contributors = contributors_info_dict(TransactionType.INTEREC_E_TRANSFER.value)
@@ -524,6 +538,7 @@ def preview_interac_letter_report(request, c_id=None):
 
 
 
+@receipt_access_required
 def send_offerings_receipt(request, c_id=None):
     try:
         report_year = request.GET.get('year', datetime.now().year - 1)
@@ -579,6 +594,7 @@ def send_offerings_receipt(request, c_id=None):
     return redirect('offering_can_summary_report')
 
 
+@receipt_access_required
 def send_interac_summary_receipt(request, c_id=None):
     try:
         report_year = request.GET.get('year', datetime.now().year - 1)
@@ -634,6 +650,7 @@ def send_interac_summary_receipt(request, c_id=None):
     return redirect('interac_summary_report')
 
 
+@receipt_access_required
 def send_interac_letter_receipt(request, c_id=None):
     try:
         report_year = request.GET.get('year', datetime.now().year - 1)
@@ -701,6 +718,7 @@ def send_interac_letter_receipt(request, c_id=None):
     return redirect('interac_letter_report')
 
 
+@receipt_access_required
 def send_offerings_letter_receipt(request, c_id=None):
     try:
         report_year = request.GET.get('year', datetime.now().year - 1)
@@ -827,6 +845,7 @@ def convert_amount_to_words(amount):
         return ''
 
 
+@receipt_access_required
 def download_offerings_receipts(request, c_id=None):
     try:
         # Prepare contributors and PDF reports
@@ -878,6 +897,7 @@ def download_offerings_receipts(request, c_id=None):
         return HttpResponse("Error occurred while generating the zip file")
 
 
+@receipt_access_required
 def download_offerings_letter_receipts(request, c_id=None):
     try:
         if request.GET.get('local_church') and request.GET.get('local_church') != 'all':
@@ -940,6 +960,7 @@ def download_offerings_letter_receipts(request, c_id=None):
         return HttpResponse("Error occurred while generating the zip file")
 
 
+@receipt_access_required
 def download_interac_summary_receipts(request, c_id=None):
     try:
         if request.GET.get('local_church') and request.GET.get('local_church') != 'all':
@@ -989,6 +1010,7 @@ def download_interac_summary_receipts(request, c_id=None):
         return HttpResponse("Error occurred while generating the zip file")
 
 
+@receipt_access_required
 def download_interac_letter_receipts(request, c_id=None):
     try:
         if request.GET.get('local_church') and request.GET.get('local_church') != 'all':
@@ -1051,6 +1073,7 @@ def download_interac_letter_receipts(request, c_id=None):
         return HttpResponse("Error occurred while generating the zip file")
 
 
+@receipt_access_required
 def search_donor_names(request):
     if request.method == "GET":
         query = request.GET.get('term', '')
@@ -1124,6 +1147,7 @@ def prepare_interac_summary_report_data_script(local_church=None,year=None):
     return contribution_dict
 
 
+@method_decorator(receipt_access_required, name="dispatch")
 class DonationUsersListView(ListView):
     """List unique users who have made donations."""
     model = DonationInKind
@@ -1155,6 +1179,7 @@ class DonationUsersListView(ListView):
         return donors
 
 
+@method_decorator(receipt_access_required, name="dispatch")
 class DownloadDonationReceipt(View):
     """Generate a PDF donation receipt for a single donor."""
 

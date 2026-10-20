@@ -3,9 +3,15 @@ from .models import Source, Income, DonationInKind
 
 
 class SourceAdmin(admin.ModelAdmin):
-    list_display = ("name", "type", "entry_by", "description")
+    # counted_via_contributions is shown and editable from the list so an
+    # administrator can see at a glance which sources are excluded from the
+    # income side of the reports, and correct one without opening it.
+    list_display = (
+        "name", "type", "counted_via_contributions", "entry_by", "description"
+    )
+    list_editable = ("counted_via_contributions",)
     search_fields = ("name", "type", "description", "entry_by__full_name")
-    list_filter = ("type", "entry_by")  # Filter by type or entry_by
+    list_filter = ("counted_via_contributions", "type", "entry_by")
     ordering = ("name",)  # Sort by name alphabetically
     list_per_page = 10
 
